@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "bin": {
     "terminal-graph": "./src/cli.js",
-    "tgraph": "./src/cli.js"
+    "tgraph": "./src/cli.js",
+    "tgraph-monitor": "./src/tgraph-monitor.js"
   },
   "scripts": {
     "start": "node src/cli.js demo",

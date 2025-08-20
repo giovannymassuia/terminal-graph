@@ -139,7 +139,32 @@ terminal-graph demo
 
 ## Monitoring Your Node.js Application
 
-### Method 1: Quick Integration (Easiest)
+### Method 1: tgraph-monitor Command (Easiest!)
+
+Simply wrap any command with `tgraph-monitor`:
+
+```bash
+# Monitor any Node.js command
+tgraph-monitor node app.js
+tgraph-monitor npm run dev
+tgraph-monitor pnpm dev
+tgraph-monitor yarn start
+tgraph-monitor npm test
+
+# View in another terminal
+terminal-graph view --file memory-monitor.log --accumulate --style lean
+```
+
+**Environment Variables:**
+```bash
+export TGRAPH_LOG_FILE=my-app-memory.log
+export TGRAPH_INTERVAL=1000
+export TGRAPH_METRIC=heapUsed
+
+tgraph-monitor pnpm dev  # Uses your settings
+```
+
+### Method 2: Quick Integration
 
 ```javascript
 // At the top of your main app file
@@ -159,7 +184,7 @@ app.listen(3000, () => {
 });
 ```
 
-### Method 2: Environment Variable Setup
+### Method 3: Environment Variable Setup
 
 ```bash
 # Set environment variables
@@ -178,7 +203,7 @@ node -r terminal-graph/src/monitoring-setup your-app.js
 terminal-graph view --file my-app.log --accumulate --style lean
 ```
 
-### Method 3: Manual Integration
+### Method 4: Manual Integration
 
 ```javascript
 const { HeapMonitor } = require('terminal-graph');
