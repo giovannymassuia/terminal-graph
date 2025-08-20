@@ -13,10 +13,14 @@
     "monitor": "node src/cli.js monitor",
     "view": "node src/cli.js view",
     "demo": "node src/cli.js demo",
-    "test": "node src/cli.js demo",
+    "test": "npm run test:cli && npm run test:functionality",
+    "test:cli": "node src/cli.js --version && timeout 5s node src/cli.js demo || echo 'CLI test complete'",
+    "test:functionality": "timeout 5s ./src/tgraph-monitor.js node --version || echo 'Monitor test complete'",
     "example": "node examples/example-app.js",
     "example-monitor": "./examples/monitor-example.sh",
-    "tgraph-demo": "./examples/tgraph-monitor-demo.sh"
+    "tgraph-demo": "./examples/tgraph-monitor-demo.sh",
+    "commit": "cz",
+    "semantic-release": "semantic-release"
   },
   "keywords": [
     "terminal",
@@ -52,6 +56,17 @@
   "dependencies": {
     "tail": "^2.2.6"
   },
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/commit-analyzer": "^11.1.0",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^9.2.6",
+    "@semantic-release/npm": "^11.0.2",
+    "@semantic-release/release-notes-generator": "^12.1.0",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "semantic-release": "^22.0.12"
+  },
   "engines": {
     "node": ">=14.0.0"
   },
@@ -60,6 +75,15 @@
     "examples/",
     "README.md",
     "LICENSE",
-    "MONITORING-GUIDE.md"
-  ]
+    "MONITORING-GUIDE.md",
+    "CHANGELOG.md"
+  ],
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

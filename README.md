@@ -14,7 +14,18 @@ Real-time ASCII line graphs for your terminal. Monitor memory usage, visualize d
 
 ## Installation & Setup
 
-### Clone and Install Locally (Recommended for Development)
+### Install from npm (Recommended)
+
+```bash
+# Install globally
+npm install -g terminal-graph
+
+# Or use directly with npx (no installation needed)
+npx terminal-graph demo
+npx terminal-graph --help
+```
+
+### Development Setup
 
 ```bash
 # Clone the repository
@@ -34,22 +45,20 @@ terminal-graph --help
 ### Alternative: Install from GitHub
 
 ```bash
-# Install directly from GitHub (when published)
+# Install directly from GitHub
 npm install -g git+https://github.com/giovannymassuia/terminal-graph.git
 ```
 
-### Development Setup
+### Development Workflow
 
 ```bash
-# Clone and setup
-git clone https://github.com/giovannymassuia/terminal-graph.git
-cd terminal-graph
-npm install
-
 # Run examples and tests
 npm run demo                                    # Run built-in demo
 node examples/example-app.js                    # Run example app
 ./examples/monitor-example.sh                   # Complete monitoring demo
+
+# Use conventional commits (for contributors)
+npm run commit                                  # Guided commit with proper formatting
 ```
 
 ## Project Structure
@@ -300,12 +309,44 @@ The log file contains JSON lines with memory metrics:
 
 ## Contributing
 
-This is a personal project for battle-testing before potential npm publication. Feel free to:
+This project welcomes contributions! The project uses automated publishing with semantic versioning.
 
+### How to Contribute
+
+1. **Fork and clone** the repository
+2. **Install dependencies**: `npm install`
+3. **Make your changes** following existing patterns
+4. **Use conventional commits**: `npm run commit` (guided commit helper)
+5. **Submit a pull request** with clear description
+
+### Commit Message Format
+
+This project uses [Conventional Commits](https://conventionalcommits.org/) for automated releases:
+
+```bash
+# Use the commit helper (recommended)
+npm run commit
+
+# Or format manually:
+feat: add new graph style
+fix: resolve timestamp alignment issue
+docs: update installation guide
+perf: optimize rendering performance
+```
+
+### Automated Publishing
+
+- **feat:** → Minor version bump (1.0.0 → 1.1.0)
+- **fix:** → Patch version bump (1.0.0 → 1.0.1)
+- **BREAKING CHANGE:** → Major version bump (1.0.0 → 2.0.0)
+
+Contributors can:
 - Report issues or bugs
 - Suggest improvements
 - Submit pull requests
 - Share your use cases
+
+See [PUBLISH.md](PUBLISH.md) for detailed publishing workflow.
 
 ## License
 
