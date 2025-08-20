@@ -13,6 +13,7 @@
    terminal-graph demo
    terminal-graph monitor --simulate
    terminal-graph view --style lean --accumulate
+   tgraph-monitor node examples/test-pnpm-style.js
    ```
 
 3. **Create npm account** (if you don't have one)

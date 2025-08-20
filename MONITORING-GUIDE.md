@@ -22,7 +22,32 @@ curl http://localhost:3000/stress   # Stress test pattern
 
 ## 🛠️ Setting Up Your Own App
 
-### Method 1: Quick Integration (Recommended)
+### Method 1: tgraph-monitor Command (Easiest!)
+
+Simply wrap any Node.js command with `tgraph-monitor`:
+
+```bash
+# Monitor any Node.js command
+tgraph-monitor node app.js
+tgraph-monitor npm run dev
+tgraph-monitor pnpm dev
+tgraph-monitor yarn start
+tgraph-monitor npm test
+
+# View in another terminal
+terminal-graph view --file memory-monitor.log --accumulate --style lean
+```
+
+**Environment Variables:**
+```bash
+export TGRAPH_LOG_FILE=my-app-memory.log
+export TGRAPH_INTERVAL=1000
+export TGRAPH_METRIC=heapUsed
+
+tgraph-monitor pnpm dev  # Uses your settings
+```
+
+### Method 2: Quick Integration
 
 Add this to your existing Node.js app:
 
@@ -46,7 +71,7 @@ app.listen(3000, () => {
 });
 ```
 
-### Method 2: Environment Variable Setup
+### Method 3: Environment Variable Setup
 
 **1. Set environment variables:**
 ```bash
@@ -73,7 +98,7 @@ node your-app.js
 terminal-graph view --file my-app.log --accumulate --style lean
 ```
 
-### Method 3: Manual Setup
+### Method 4: Manual Setup
 
 ```javascript
 const MemoryMonitor = require('./monitoring-setup');

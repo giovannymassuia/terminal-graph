@@ -13,7 +13,10 @@
     "monitor": "node src/cli.js monitor",
     "view": "node src/cli.js view",
     "demo": "node src/cli.js demo",
-    "test": "node src/cli.js demo"
+    "test": "node src/cli.js demo",
+    "example": "node examples/example-app.js",
+    "example-monitor": "./examples/monitor-example.sh",
+    "tgraph-demo": "./examples/tgraph-monitor-demo.sh"
   },
   "keywords": [
     "terminal",
@@ -28,7 +31,13 @@
     "real-time",
     "metrics",
     "console",
-    "dashboard"
+    "dashboard",
+    "nodejs",
+    "performance",
+    "devtools",
+    "logging",
+    "analytics",
+    "profiling"
   ],
   "author": "giovannymassuia",
   "license": "MIT",
