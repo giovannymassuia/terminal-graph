@@ -11,7 +11,7 @@ const fs = require('fs');
 const http = require('http');
 
 // Initialize memory monitoring
-const { HeapMonitor } = require('./index');
+const { HeapMonitor } = require('../src/index');
 
 class ExampleApp {
   constructor() {

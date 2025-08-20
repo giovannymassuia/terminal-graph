@@ -21,7 +21,7 @@ echo "   - Log file: example-app-memory.log"
 echo ""
 
 # Start the example app in the background
-node example-app.js &
+node examples/example-app.js &
 APP_PID=$!
 
 # Wait a moment for the app to start and generate some data
