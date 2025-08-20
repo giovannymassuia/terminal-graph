@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/giovannymassuia/terminal-graph/compare/v1.0.2...v1.0.3) (2025-08-20)
+
+
+### 🐛 Bug Fixes
+
+* update .releaserc.json to set pkgRoot for npm package tarball generation ([5ea067a](https://github.com/giovannymassuia/terminal-graph/commit/5ea067a9d927b868e7b1904676e5d48daf1db008))
+
 ## [1.0.2](https://github.com/giovannymassuia/terminal-graph/compare/v1.0.1...v1.0.2) (2025-08-20)
 
 
