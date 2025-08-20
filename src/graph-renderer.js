@@ -328,8 +328,18 @@ class GraphRenderer {
       }
       
       // Position the label
-      for (let k = 0; k < label.length && position + k < width; k++) {
-        labels[position + k] = label[k];
+      // Special handling for the last label (rightmost) - right-align it
+      if (i === labelCount - 1) {
+        // Right-align the last label to prevent overflow
+        const startPos = Math.max(0, width - label.length);
+        for (let k = 0; k < label.length && startPos + k < width; k++) {
+          labels[startPos + k] = label[k];
+        }
+      } else {
+        // Left-align other labels normally
+        for (let k = 0; k < label.length && position + k < width; k++) {
+          labels[position + k] = label[k];
+        }
       }
     }
     
