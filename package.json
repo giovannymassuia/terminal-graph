@@ -1,0 +1,57 @@
+{
+  "name": "terminal-graph",
+  "version": "1.0.0",
+  "description": "Real-time ASCII line graphs for terminal - monitor memory, metrics, and data streams",
+  "main": "index.js",
+  "bin": {
+    "terminal-graph": "./cli.js",
+    "tgraph": "./cli.js"
+  },
+  "scripts": {
+    "start": "node cli.js demo",
+    "monitor": "node cli.js monitor",
+    "view": "node cli.js view",
+    "demo": "node cli.js demo",
+    "test": "node cli.js demo"
+  },
+  "keywords": [
+    "terminal",
+    "graph",
+    "chart",
+    "ascii",
+    "monitoring",
+    "heap",
+    "memory",
+    "cli",
+    "visualization",
+    "real-time",
+    "metrics",
+    "console",
+    "dashboard"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/terminal-graph.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/terminal-graph/issues"
+  },
+  "homepage": "https://github.com/yourusername/terminal-graph#readme",
+  "dependencies": {
+    "tail": "^2.2.6"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "cli.js",
+    "index.js",
+    "heap-monitor.js",
+    "graph-viewer.js",
+    "graph-renderer.js",
+    "README.md",
+    "LICENSE"
+  ]
+}

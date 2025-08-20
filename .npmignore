@@ -1,0 +1,31 @@
+# Test files
+test-*.js
+demo-*.js
+quick-*.js
+*.log
+
+# Development files
+.gitignore
+.git/
+
+# Test data
+accumulate-test.log
+heap-demo.log
+lean-demo.log
+quick-test.log
+test-data.log
+
+# Examples that aren't needed in package
+demo.js
+test-accumulate.js
+quick-lean-test.js
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
