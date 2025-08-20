@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/giovannymassuia/terminal-graph/compare/v1.0.0...v1.0.1) (2025-08-20)
+
+
+### 🐛 Bug Fixes
+
+* update paths in package.json for bin and repository URL format ([db626d0](https://github.com/giovannymassuia/terminal-graph/commit/db626d0951fd1c77ed154929f2c55386550efbc3))
+
 ## 1.0.0 (2025-08-20)
 
 
