@@ -11,16 +11,19 @@ This project uses **automated publishing** with GitHub Actions and semantic vers
 
 ### 2. npm Account Setup
 1. **Create npm account**: https://www.npmjs.com/signup
-2. **Create npm access token**:
+2. **Create npm automation token** (bypasses 2FA):
+   - Go to https://www.npmjs.com/settings/tokens
+   - Click "Generate New Token" → "Granular Access Token"
+   - **OR** use CLI:
    ```bash
    npm login
-   npm token create --access=public --publish
+   npm token create --type=automation --access=public --publish
    ```
 3. **Add token to GitHub Secrets**:
    - Go to `https://github.com/giovannymassuia/terminal-graph/settings/secrets/actions`
    - Click "New repository secret"
    - Name: `NPM_TOKEN`
-   - Value: Your npm access token
+   - Value: Your npm **automation** access token
 
 ### 3. Install Development Dependencies
 ```bash
