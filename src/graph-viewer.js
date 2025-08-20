@@ -23,7 +23,7 @@ class GraphViewer {
     console.clear();
     console.log(`Starting graph viewer for ${this.logFile}`);
     console.log(`Monitoring metric: ${this.metric}`);
-    console.log('Press Ctrl+C to exit...\n');
+    console.log('Press Ctrl+C to exit, R to reload...\n');
     
     // Initialize renderer
     this.renderer = new GraphRenderer({
@@ -36,6 +36,9 @@ class GraphViewer {
       style: this.style,
       showTimeAxis: true
     });
+
+    // Set up keyboard input handling
+    this.setupKeyboardInput();
 
     // Load existing data from file
     await this.loadExistingData();
@@ -63,6 +66,63 @@ class GraphViewer {
     }, this.refreshRate);
     
     this.isRunning = true;
+  }
+
+  setupKeyboardInput() {
+    // Enable raw mode to capture single keystrokes
+    if (process.stdin.isTTY) {
+      process.stdin.setRawMode(true);
+      process.stdin.setEncoding('utf8');
+      process.stdin.resume();
+      
+      process.stdin.on('data', (key) => {
+        // Handle Ctrl+C
+        if (key === '\u0003') {
+          this.stop();
+        }
+        // Handle 'r' or 'R' for reload
+        else if (key === 'r' || key === 'R') {
+          this.reload();
+        }
+        // Handle 'c' or 'C' for clear and reload
+        else if (key === 'c' || key === 'C') {
+          this.clearAndReload();
+        }
+        // Handle 'q' for quit
+        else if (key === 'q' || key === 'Q') {
+          this.stop();
+        }
+      });
+    }
+  }
+
+  async reload() {
+    console.log('\n📊 Reloading graph data...');
+    
+    // Clear current data points
+    this.dataPoints = [];
+    
+    // Reload data from file
+    await this.loadExistingData();
+    
+    // Force immediate render
+    this.render();
+    
+    console.log('✅ Graph reloaded!');
+    // The message will be cleared on next render
+  }
+
+  async clearAndReload() {
+    // Clear the screen completely
+    console.clear();
+    console.log(`Starting graph viewer for ${this.logFile}`);
+    console.log(`Monitoring metric: ${this.metric}`);
+    console.log('Press Ctrl+C to exit, R to reload...\n');
+    
+    // Clear data and reload
+    this.dataPoints = [];
+    await this.loadExistingData();
+    this.render();
   }
 
   async loadExistingData() {
@@ -202,17 +262,27 @@ class GraphViewer {
     info += ` | Mode: ${this.accumulate ? 'Accumulate' : 'Rolling'}`;
     info += ` | Refresh: ${this.refreshRate}ms | File: ${this.logFile}`;
     
+    // Add keyboard shortcuts hint
+    const shortcuts = '\n[R] Reload  [C] Clear  [Q] Quit';
+    
     // Render graph
     const output = this.renderer.render(this.dataPoints, {
       info: info
     });
     
     console.log(output);
+    console.log(shortcuts);
   }
 
   stop() {
     console.log('\n\nStopping graph viewer...');
     this.isRunning = false;
+    
+    // Restore terminal settings
+    if (process.stdin.isTTY) {
+      process.stdin.setRawMode(false);
+      process.stdin.pause();
+    }
     
     if (this.tail) {
       this.tail.unwatch();
@@ -283,6 +353,12 @@ Options:
   --accumulate, -a      Accumulate all data instead of rolling window
   --style, -s <style>   Graph style: blocks, ascii, braille, dots, lean (default: blocks)
   --help, -h            Show this help message
+
+Keyboard Shortcuts (during monitoring):
+  R - Reload data from file (restart monitoring from beginning)
+  C - Clear screen and reload
+  Q - Quit the viewer
+  Ctrl+C - Exit
 
 Examples:
   node graph-viewer.js --file heap.log --metric heapPercent --points 150

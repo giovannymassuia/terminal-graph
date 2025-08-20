@@ -20,6 +20,13 @@ curl http://localhost:3000/leak     # Memory leak simulation
 curl http://localhost:3000/stress   # Stress test pattern
 ```
 
+**3. Interactive Controls:**
+While monitoring, use these keyboard shortcuts:
+- **R** - Reload data from file (restart from beginning)
+- **C** - Clear screen and reload
+- **Q** - Quit the viewer
+- **Ctrl+C** - Exit
+
 ## 🛠️ Setting Up Your Own App
 
 ### Method 1: tgraph-monitor Command (Easiest!)
@@ -177,6 +184,14 @@ terminal-graph view --file app-memory.log --accumulate --refresh 0
 | **external** | MB (C++ objects) | Native memory usage | 0-100MB |
 
 **Recommended for most monitoring: `--metric heapUsed`** (shows actual MB usage)
+
+### Interactive Features
+
+During monitoring, you can:
+- **Press R** to reload all data from the beginning of the log file
+- **Press C** to clear the screen and reload
+- **Press Q** to quit cleanly
+- Use these to reset your view without restarting the monitoring process!
 
 ### Memory Patterns to Watch For
 
