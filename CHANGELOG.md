@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/giovannymassuia/terminal-graph/compare/v1.0.1...v1.0.2) (2025-08-20)
+
+
+### 🐛 Bug Fixes
+
+* update PUBLISH.md to clarify npm automation token creation process ([ff73932](https://github.com/giovannymassuia/terminal-graph/commit/ff7393226e7c0695ddbd2b39a63919652777609e))
+
 ## [1.0.1](https://github.com/giovannymassuia/terminal-graph/compare/v1.0.0...v1.0.1) (2025-08-20)
 
 
