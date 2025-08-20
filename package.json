@@ -4,9 +4,9 @@
   "description": "Real-time ASCII line graphs for terminal - monitor memory, metrics, and data streams",
   "main": "src/index.js",
   "bin": {
-    "terminal-graph": "./src/cli.js",
-    "tgraph": "./src/cli.js",
-    "tgraph-monitor": "./src/tgraph-monitor.js"
+    "terminal-graph": "src/cli.js",
+    "tgraph": "src/cli.js",
+    "tgraph-monitor": "src/tgraph-monitor.js"
   },
   "scripts": {
     "start": "node src/cli.js demo",
@@ -47,7 +47,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/giovannymassuia/terminal-graph.git"
+    "url": "git+https://github.com/giovannymassuia/terminal-graph.git"
   },
   "bugs": {
     "url": "https://github.com/giovannymassuia/terminal-graph/issues"
