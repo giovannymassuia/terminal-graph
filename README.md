@@ -6,8 +6,9 @@ Real-time ASCII line graphs for your terminal. Monitor memory usage, visualize d
 
 - **Real-time Monitoring**: Continuously monitors Node.js heap memory usage
 - **Dual View Modes**: Terminal ASCII graphs or modern web browser interface
+- **Multi-Metric Views**: Single metric focus, multi-chart grid, or metric comparison overlays
 - **ASCII Line Graphs**: Beautiful terminal-based visualization with multiple styles
-- **Web Dashboard**: Interactive browser-based graphs with real-time updates
+- **Web Dashboard**: Interactive browser-based graphs with real-time updates and multiple view modes
 - **Interactive Controls**: Reload data with 'R', clear with 'C', cycle styles with 'L', quit with 'Q' during monitoring
 - **Log File Based**: Writes metrics to files for persistence and analysis
 - **Multiple Metrics**: Monitor heap used, heap total, RSS, external memory, or heap percentage
@@ -94,7 +95,7 @@ terminal-graph/
 terminal-graph demo              # Built-in demo
 terminal-graph monitor          # Monitor current process
 terminal-graph view --style lean --accumulate  # Terminal view with lean style
-terminal-graph web --style area --accumulate   # Web browser view
+terminal-graph web --style area --accumulate   # Web browser view (multi-metric capable)
 ```
 
 ## CLI Usage
@@ -121,7 +122,7 @@ terminal-graph view -s blocks -a        # Filled blocks with accumulation
 ```
 
 #### `terminal-graph web [options]`
-View real-time graph in web browser.
+View real-time graph in web browser with multiple view modes.
 
 ```bash
 terminal-graph web                      # Default settings (opens browser)
@@ -129,6 +130,11 @@ terminal-graph web --style area         # Area chart style
 terminal-graph web --port 8080          # Custom port
 terminal-graph web --no-open            # Don't auto-open browser
 ```
+
+**Web View Modes:**
+- **Single**: Traditional single-metric graph (like terminal view)
+- **Multi**: Grid of separate charts for all metrics simultaneously
+- **Compare**: Overlay multiple metrics on one chart for comparison
 
 #### `terminal-graph demo`
 Run an interactive demo with simulated data.
@@ -174,6 +180,8 @@ terminal-graph demo
 - `Space` - Pause/Resume updates
 - `C` - Clear data
 - `L` - Cycle through styles (line → area → bars)
+- `M` - Cycle through view modes (Single → Multi → Compare)
+- `1-5` - Toggle metrics in Compare mode (1=heapUsed, 2=heapTotal, etc.)
 - `R` - Reload page
 
 ### Graph Styles
@@ -189,6 +197,41 @@ terminal-graph demo
 - **line** - Classic line chart with data points
 - **area** - Filled area chart with gradient
 - **bars** - Bar chart visualization
+
+## Web View Features
+
+The web interface provides three distinct view modes for analyzing memory data:
+
+### 📊 Single View Mode
+Traditional single-metric focus with detailed statistics:
+- Large main graph showing selected metric (heapUsed by default)
+- Live statistics cards showing current, average, min, max values
+- Interactive controls for pause/resume, clear, and style switching
+
+### 📈 Multi View Mode  
+Grid layout showing all metrics simultaneously:
+- **Heap Used**: Actual memory usage in MB - best for leak detection
+- **Heap Total**: Allocated heap size in MB - shows V8 memory allocation
+- **Heap Percent**: Usage percentage (0-100%) - normalized view across apps
+- **RSS**: Total process memory in MB - system memory impact
+- **External**: C++ objects memory in MB - native module usage
+
+Each chart updates independently and can be viewed in line, area, or bar style.
+
+### 🔀 Compare View Mode
+Overlay multiple metrics on one chart for direct comparison:
+- Select which metrics to display using checkboxes or number keys (1-5)
+- Each metric has a unique color for easy identification
+- Legend shows active metrics with color coding
+- Perfect for correlation analysis (e.g., heap usage vs. RSS)
+
+### Keyboard Navigation
+- `M` - Cycle between Single → Multi → Compare modes
+- `1-5` - In Compare mode: toggle individual metrics (1=heapUsed, 2=heapTotal, etc.)
+- `L` - Cycle graph styles across all active charts
+- `Space` - Pause/resume real-time updates
+- `C` - Clear all data and reset charts
+- `R` - Reload the page
 
 ## Monitoring Your Node.js Application
 

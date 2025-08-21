@@ -62,6 +62,12 @@ terminal-graph view --file memory-monitor.log --accumulate --style lean
 
 # Web browser view (interactive dashboard)
 terminal-graph web --file memory-monitor.log --accumulate --style area
+
+# Web view with all metrics visible
+terminal-graph web --file memory-monitor.log --accumulate  # Switch to Multi mode in browser
+
+# Web view for metric comparison
+terminal-graph web --file memory-monitor.log --accumulate  # Switch to Compare mode in browser
 ```
 
 ### Method 2: Quick Integration

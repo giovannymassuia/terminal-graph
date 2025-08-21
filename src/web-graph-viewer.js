@@ -17,7 +17,16 @@ class WebGraphViewer {
     this.port = options.port || 3456;
     this.autoOpen = options.autoOpen !== false; // default true
     
-    this.dataPoints = [];
+    // Store all metrics data
+    this.allMetricsData = {
+      heapUsed: [],
+      heapTotal: [],
+      heapPercent: [],
+      rss: [],
+      external: []
+    };
+    this.dataPoints = []; // Keep for backward compatibility
+    this.rawData = []; // Store raw data for all metrics
     this.tail = null;
     this.server = null;
     this.connections = new Set();
@@ -64,7 +73,8 @@ class WebGraphViewer {
         }
       }
       
-      console.log(`Loaded ${this.dataPoints.length} existing data points${this.accumulate ? ' (accumulating)' : ''}`);
+      const totalMetrics = Object.values(this.allMetricsData).reduce((sum, arr) => sum + arr.length, 0);
+      console.log(`Loaded ${this.dataPoints.length} primary data points, ${totalMetrics} total metric points${this.accumulate ? ' (accumulating)' : ''}`);
     } catch (error) {
       console.error('Error loading existing data:', error.message);
     }
@@ -106,13 +116,40 @@ class WebGraphViewer {
     
     try {
       const data = JSON.parse(line);
-      const value = this.extractMetricValue(data);
       
-      if (value !== null && !isNaN(value)) {
+      // Store raw data
+      this.rawData.push(data);
+      if (!this.accumulate && this.rawData.length > this.maxDataPoints) {
+        this.rawData.shift();
+      }
+      
+      // Process all metrics
+      const time = new Date(data.timestamp).toLocaleTimeString();
+      
+      Object.keys(this.allMetricsData).forEach(metric => {
+        const value = this.extractMetricValue(data, metric);
+        if (value !== null && !isNaN(value)) {
+          const point = {
+            timestamp: data.timestamp,
+            value: parseFloat(value),
+            time: time
+          };
+          
+          this.allMetricsData[metric].push(point);
+          
+          if (!this.accumulate && this.allMetricsData[metric].length > this.maxDataPoints) {
+            this.allMetricsData[metric].shift();
+          }
+        }
+      });
+      
+      // Keep backward compatibility for single metric
+      const primaryValue = this.extractMetricValue(data, this.metric);
+      if (primaryValue !== null && !isNaN(primaryValue)) {
         const point = {
           timestamp: data.timestamp,
-          value: parseFloat(value),
-          time: new Date(data.timestamp).toLocaleTimeString()
+          value: parseFloat(primaryValue),
+          time: time
         };
         
         this.dataPoints.push(point);
@@ -126,8 +163,9 @@ class WebGraphViewer {
     }
   }
 
-  extractMetricValue(data) {
-    switch (this.metric) {
+  extractMetricValue(data, metricName = null) {
+    const metric = metricName || this.metric;
+    switch (metric) {
       case 'heapUsed':
         return parseFloat(data.heapUsed);
       case 'heapTotal':
@@ -192,11 +230,13 @@ class WebGraphViewer {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       dataPoints: this.dataPoints,
+      allMetricsData: this.allMetricsData,
       metric: this.metric,
       metricLabel: this.getMetricLabel(),
       accumulate: this.accumulate,
       maxDataPoints: this.maxDataPoints,
-      stats: this.calculateStats()
+      stats: this.calculateStats(),
+      allStats: this.calculateAllStats()
     }));
   }
 
@@ -228,7 +268,9 @@ class WebGraphViewer {
     res.write(`data: ${JSON.stringify({
       type: 'update',
       dataPoints: this.dataPoints,
-      stats: this.calculateStats()
+      allMetricsData: this.allMetricsData,
+      stats: this.calculateStats(),
+      allStats: this.calculateAllStats()
     })}\n\n`);
 
     req.on('close', () => {
@@ -240,7 +282,9 @@ class WebGraphViewer {
     const data = JSON.stringify({
       type: 'update',
       dataPoints: this.dataPoints,
-      stats: this.calculateStats()
+      allMetricsData: this.allMetricsData,
+      stats: this.calculateStats(),
+      allStats: this.calculateAllStats()
     });
 
     this.connections.forEach(({ res }) => {
@@ -248,12 +292,14 @@ class WebGraphViewer {
     });
   }
 
-  calculateStats() {
-    if (this.dataPoints.length === 0) {
+  calculateStats(dataPoints = null) {
+    const points = dataPoints || this.dataPoints;
+    
+    if (points.length === 0) {
       return { current: 0, average: 0, min: 0, max: 0 };
     }
 
-    const values = this.dataPoints.map(p => p.value);
+    const values = points.map(p => p.value);
     const current = values[values.length - 1];
     const average = values.reduce((a, b) => a + b, 0) / values.length;
     const min = Math.min(...values);
@@ -265,6 +311,14 @@ class WebGraphViewer {
       min: min.toFixed(2),
       max: max.toFixed(2)
     };
+  }
+
+  calculateAllStats() {
+    const stats = {};
+    Object.keys(this.allMetricsData).forEach(metric => {
+      stats[metric] = this.calculateStats(this.allMetricsData[metric]);
+    });
+    return stats;
   }
 
   stop() {
