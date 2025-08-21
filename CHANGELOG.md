@@ -1,3 +1,11 @@
+## [1.1.0](https://github.com/giovannymassuia/terminal-graph/compare/v1.0.3...v1.1.0) (2025-08-21)
+
+
+### 🚀 Features
+
+* add interactive controls for monitoring ([49ee0e6](https://github.com/giovannymassuia/terminal-graph/commit/49ee0e61917be34ed82cfc54bce8b61812502c03))
+* add style cycling feature to monitoring controls ([977ec1f](https://github.com/giovannymassuia/terminal-graph/commit/977ec1f26698cc50a66986a75eb2fca2d4804684))
+
 ## [1.0.3](https://github.com/giovannymassuia/terminal-graph/compare/v1.0.2...v1.0.3) (2025-08-20)
 
 
