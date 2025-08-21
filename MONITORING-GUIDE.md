@@ -24,6 +24,7 @@ curl http://localhost:3000/stress   # Stress test pattern
 While monitoring, use these keyboard shortcuts:
 - **R** - Reload data from file (restart from beginning)
 - **C** - Clear screen and reload
+- **L** - Loop through graph styles (blocks → lean → ascii → dots → braille)
 - **Q** - Quit the viewer
 - **Ctrl+C** - Exit
 
@@ -190,8 +191,9 @@ terminal-graph view --file app-memory.log --accumulate --refresh 0
 During monitoring, you can:
 - **Press R** to reload all data from the beginning of the log file
 - **Press C** to clear the screen and reload
+- **Press L** to cycle through graph styles (blocks → lean → ascii → dots → braille)
 - **Press Q** to quit cleanly
-- Use these to reset your view without restarting the monitoring process!
+- Use these to customize your view without restarting the monitoring process!
 
 ### Memory Patterns to Watch For
 

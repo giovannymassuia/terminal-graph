@@ -13,6 +13,7 @@ class GraphViewer {
     this.refreshRate = options.refreshRate || 100; // ms
     this.accumulate = options.accumulate || false; // Accumulate data instead of rolling window
     this.style = options.style || 'blocks'; // blocks, ascii, braille
+    this.availableStyles = ['blocks', 'lean', 'ascii', 'dots', 'braille'];
     this.dataPoints = [];
     this.renderer = null;
     this.tail = null;
@@ -88,6 +89,10 @@ class GraphViewer {
         else if (key === 'c' || key === 'C') {
           this.clearAndReload();
         }
+        // Handle 'l' or 'L' for cycling through styles
+        else if (key === 'l' || key === 'L') {
+          this.cycleStyle();
+        }
         // Handle 'q' for quit
         else if (key === 'q' || key === 'Q') {
           this.stop();
@@ -123,6 +128,26 @@ class GraphViewer {
     this.dataPoints = [];
     await this.loadExistingData();
     this.render();
+  }
+
+  cycleStyle() {
+    // Get current style index
+    const currentIndex = this.availableStyles.indexOf(this.style);
+    // Move to next style, wrap around if at the end
+    const nextIndex = (currentIndex + 1) % this.availableStyles.length;
+    const oldStyle = this.style;
+    this.style = this.availableStyles[nextIndex];
+    
+    // Update the renderer with the new style
+    if (this.renderer) {
+      this.renderer.style = this.style;
+      // Force immediate render to show the new style
+      this.render();
+      console.log(`\n🎨 Switched from ${oldStyle} to ${this.style} style`);
+    } else {
+      // If no renderer yet, just log the style change
+      console.log(`Style changed from ${oldStyle} to ${this.style}`);
+    }
   }
 
   async loadExistingData() {
@@ -262,8 +287,8 @@ class GraphViewer {
     info += ` | Mode: ${this.accumulate ? 'Accumulate' : 'Rolling'}`;
     info += ` | Refresh: ${this.refreshRate}ms | File: ${this.logFile}`;
     
-    // Add keyboard shortcuts hint
-    const shortcuts = '\n[R] Reload  [C] Clear  [Q] Quit';
+    // Add keyboard shortcuts hint with current style
+    const shortcuts = `\n[R] Reload  [C] Clear  [L] Style (${this.style})  [Q] Quit`;
     
     // Render graph
     const output = this.renderer.render(this.dataPoints, {
@@ -357,6 +382,7 @@ Options:
 Keyboard Shortcuts (during monitoring):
   R - Reload data from file (restart monitoring from beginning)
   C - Clear screen and reload
+  L - Loop through graph styles (blocks → lean → ascii → dots → braille)
   Q - Quit the viewer
   Ctrl+C - Exit
 

@@ -4,7 +4,7 @@
 const GraphViewer = require('../src/graph-viewer');
 const fs = require('fs');
 
-console.log('🧪 Testing reload feature...\n');
+console.log('🧪 Testing reload and style cycling features...\n');
 
 // Create a test log file with initial data
 const testFile = 'test-reload.log';
@@ -26,7 +26,8 @@ console.log('');
 console.log('Instructions:');
 console.log('1. Press R to reload the data');
 console.log('2. Press C to clear and reload');
-console.log('3. Press Q to quit');
+console.log('3. Press L to cycle through styles (blocks → lean → ascii → dots → braille)');
+console.log('4. Press Q to quit');
 console.log('');
 
 // Create and start viewer
@@ -49,7 +50,7 @@ setTimeout(() => {
     external: 5 
   };
   fs.appendFileSync(testFile, JSON.stringify(newData) + '\n');
-  console.log('\n📝 Added new data point - press R to reload and see it!');
+  console.log('\n📝 Added new data point - press R to reload or L to try different styles!');
 }, 2000);
 
 // Start the viewer

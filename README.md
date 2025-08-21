@@ -6,7 +6,7 @@ Real-time ASCII line graphs for your terminal. Monitor memory usage, visualize d
 
 - **Real-time Monitoring**: Continuously monitors Node.js heap memory usage
 - **ASCII Line Graphs**: Beautiful terminal-based visualization with multiple styles
-- **Interactive Controls**: Reload data with 'R', clear with 'C', quit with 'Q' during monitoring
+- **Interactive Controls**: Reload data with 'R', clear with 'C', cycle styles with 'L', quit with 'Q' during monitoring
 - **Log File Based**: Writes metrics to files for persistence and analysis
 - **Multiple Metrics**: Monitor heap used, heap total, RSS, external memory, or heap percentage
 - **Data Accumulation**: Intelligent compression preserves peaks while fitting terminal width
@@ -142,6 +142,7 @@ terminal-graph demo
 #### Interactive Controls (During Monitoring)
 - `R` - Reload data from file (restart from beginning)
 - `C` - Clear screen and reload
+- `L` - Loop through graph styles (blocks → lean → ascii → dots → braille)
 - `Q` - Quit the viewer
 - `Ctrl+C` - Exit
 
@@ -266,7 +267,7 @@ monitor.start();
 
 Current: 168.45 MB | Average: 82.31 MB | Min: 15.20 MB | Max: 180.00 MB
 Data points: 450 (compressed from 1200) | Refresh: 500ms | example-app-memory.log
-[R] Reload  [C] Clear  [Q] Quit
+[R] Reload  [C] Clear  [L] Style (blocks)  [Q] Quit
 ```
 
 ## Advanced Usage
