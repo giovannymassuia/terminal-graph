@@ -6,6 +6,7 @@ const fs = require('fs');
 
 const HeapMonitor = require('./heap-monitor');
 const GraphViewer = require('./graph-viewer');
+const WebGraphViewer = require('./web-graph-viewer');
 
 const VERSION = '1.0.0';
 
@@ -25,6 +26,7 @@ Usage:
 Commands:
   monitor [file] [interval]    Start monitoring heap memory
   view [options]               View graph from log file  
+  web [options]                View graph in web browser
   demo                         Run interactive demo
   help                         Show this help message
 
@@ -34,7 +36,7 @@ Monitor Options:
     interval    Sampling interval in ms (default: 100)
     --simulate  Simulate memory activity for testing
 
-View Options:
+View Options (Terminal):
   terminal-graph view [options]
     --file, -f <path>      Log file to monitor (default: heap.log)
     --metric, -m <metric>  Metric: heapUsed, heapTotal, heapPercent, rss, external
@@ -43,12 +45,25 @@ View Options:
     --points, -p <number>  Max data points for rolling window (default: 100)
     --refresh, -r <ms>     Refresh rate in milliseconds (default: 100)
 
+Web View Options:
+  terminal-graph web [options]
+    --file, -f <path>      Log file to monitor (default: heap.log)
+    --metric, -m <metric>  Metric: heapUsed, heapTotal, heapPercent, rss, external
+    --style, -s <style>    Style: line, area, bars
+    --accumulate, -a       Accumulate all data (no rolling window)
+    --points, -p <number>  Max data points for rolling window (default: 100)
+    --port <number>        Server port (default: 3456)
+    --no-open             Don't automatically open browser
+
 Quick Start:
   # Monitor current process
   terminal-graph monitor
   
-  # View with lean style and accumulation
+  # View in terminal with lean style
   terminal-graph view --style lean --accumulate
+  
+  # View in web browser
+  terminal-graph web --style area --accumulate
   
   # Run demo
   terminal-graph demo
@@ -56,6 +71,7 @@ Quick Start:
 Examples:
   terminal-graph monitor my-app.log 200
   terminal-graph view --file my-app.log --style lean --accumulate
+  terminal-graph web --file my-app.log --style area --port 8080
   terminal-graph view -s blocks -m heapPercent -a
   npx terminal-graph demo
 `);
@@ -134,6 +150,62 @@ function runViewer() {
   const viewer = new GraphViewer(options);
   viewer.start().catch(error => {
     console.error('Error starting viewer:', error);
+    process.exit(1);
+  });
+}
+
+function runWebViewer() {
+  const webArgs = args.slice(1);
+  const options = {
+    logFile: 'heap.log',
+    metric: 'heapUsed',
+    maxDataPoints: 100,
+    refreshRate: 100,
+    accumulate: false,
+    style: 'line',
+    port: 3456,
+    autoOpen: true
+  };
+
+  // Parse web viewer arguments
+  for (let i = 0; i < webArgs.length; i++) {
+    switch (webArgs[i]) {
+      case '--file':
+      case '-f':
+        options.logFile = webArgs[++i];
+        break;
+      case '--metric':
+      case '-m':
+        options.metric = webArgs[++i];
+        break;
+      case '--points':
+      case '-p':
+        options.maxDataPoints = parseInt(webArgs[++i]);
+        break;
+      case '--refresh':
+      case '-r':
+        options.refreshRate = parseInt(webArgs[++i]);
+        break;
+      case '--accumulate':
+      case '-a':
+        options.accumulate = true;
+        break;
+      case '--style':
+      case '-s':
+        options.style = webArgs[++i];
+        break;
+      case '--port':
+        options.port = parseInt(webArgs[++i]);
+        break;
+      case '--no-open':
+        options.autoOpen = false;
+        break;
+    }
+  }
+
+  const viewer = new WebGraphViewer(options);
+  viewer.start().catch(error => {
+    console.error('Error starting web viewer:', error);
     process.exit(1);
   });
 }
@@ -225,6 +297,9 @@ switch (command) {
     break;
   case 'view':
     runViewer();
+    break;
+  case 'web':
+    runWebViewer();
     break;
   case 'demo':
     runDemo();

@@ -1,6 +1,6 @@
 # 📊 Node.js App Memory Monitoring Guide
 
-This guide shows you how to monitor your Node.js application's memory usage in real-time with beautiful terminal graphs.
+This guide shows you how to monitor your Node.js application's memory usage in real-time with beautiful terminal graphs or an interactive web dashboard.
 
 ## 🚀 Quick Demo
 
@@ -53,6 +53,15 @@ export TGRAPH_INTERVAL=1000
 export TGRAPH_METRIC=heapUsed
 
 tgraph-monitor pnpm dev  # Uses your settings
+```
+
+**Viewing Options:**
+```bash
+# Terminal view (ASCII graphs)
+terminal-graph view --file memory-monitor.log --accumulate --style lean
+
+# Web browser view (interactive dashboard)
+terminal-graph web --file memory-monitor.log --accumulate --style area
 ```
 
 ### Method 2: Quick Integration
@@ -144,8 +153,11 @@ class MyApp {
 
 ### Basic Monitoring (Recommended)
 ```bash
-# Simple setup for most apps
+# Terminal view for simple monitoring
 terminal-graph view --file app-memory.log --accumulate --style lean
+
+# Web view for interactive monitoring
+terminal-graph web --file app-memory.log --accumulate --style area
 ```
 
 ### Development Monitoring

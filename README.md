@@ -5,12 +5,14 @@ Real-time ASCII line graphs for your terminal. Monitor memory usage, visualize d
 ## Features
 
 - **Real-time Monitoring**: Continuously monitors Node.js heap memory usage
+- **Dual View Modes**: Terminal ASCII graphs or modern web browser interface
 - **ASCII Line Graphs**: Beautiful terminal-based visualization with multiple styles
+- **Web Dashboard**: Interactive browser-based graphs with real-time updates
 - **Interactive Controls**: Reload data with 'R', clear with 'C', cycle styles with 'L', quit with 'Q' during monitoring
 - **Log File Based**: Writes metrics to files for persistence and analysis
 - **Multiple Metrics**: Monitor heap used, heap total, RSS, external memory, or heap percentage
 - **Data Accumulation**: Intelligent compression preserves peaks while fitting terminal width
-- **Multiple Graph Styles**: blocks, lean, ascii, dots, braille - choose your preference
+- **Multiple Graph Styles**: Terminal (blocks, lean, ascii, dots, braille) or Web (line, area, bars)
 - **Easy Integration**: Drop-in monitoring for any Node.js application
 
 ## Installation & Setup
@@ -91,7 +93,8 @@ terminal-graph/
 # Or run individual commands:
 terminal-graph demo              # Built-in demo
 terminal-graph monitor          # Monitor current process
-terminal-graph view --style lean --accumulate  # View with lean style
+terminal-graph view --style lean --accumulate  # Terminal view with lean style
+terminal-graph web --style area --accumulate   # Web browser view
 ```
 
 ## CLI Usage
@@ -108,13 +111,23 @@ terminal-graph monitor --simulate       # With simulated memory patterns
 ```
 
 #### `terminal-graph view [options]`
-View real-time graph from log file.
+View real-time graph in terminal.
 
 ```bash
 terminal-graph view                     # Default settings
 terminal-graph view --style lean        # Minimal colon style
 terminal-graph view --accumulate        # Keep all historical data
 terminal-graph view -s blocks -a        # Filled blocks with accumulation
+```
+
+#### `terminal-graph web [options]`
+View real-time graph in web browser.
+
+```bash
+terminal-graph web                      # Default settings (opens browser)
+terminal-graph web --style area         # Area chart style
+terminal-graph web --port 8080          # Custom port
+terminal-graph web --no-open            # Don't auto-open browser
 ```
 
 #### `terminal-graph demo`
@@ -131,7 +144,7 @@ terminal-graph demo
 - `interval` - Sampling interval in ms (default: 100)
 - `--simulate` - Add simulated memory activity
 
-#### View Options
+#### Terminal View Options
 - `--file, -f` - Log file to monitor (default: heap.log)
 - `--metric, -m` - Metric to display: **heapUsed** (recommended), heapTotal, heapPercent, rss, external
 - `--style, -s` - Graph style: blocks, lean, ascii, dots, braille
@@ -139,20 +152,43 @@ terminal-graph demo
 - `--points, -p` - Maximum data points for rolling window (default: 100)
 - `--refresh, -r` - Refresh rate in milliseconds (default: 100)
 
-#### Interactive Controls (During Monitoring)
+#### Web View Options
+- `--file, -f` - Log file to monitor (default: heap.log)
+- `--metric, -m` - Metric to display: **heapUsed** (recommended), heapTotal, heapPercent, rss, external
+- `--style, -s` - Graph style: line, area, bars
+- `--accumulate, -a` - Accumulate all data instead of rolling window
+- `--points, -p` - Maximum data points for rolling window (default: 100)
+- `--port` - Server port (default: 3456)
+- `--no-open` - Don't automatically open browser
+
+#### Interactive Controls
+
+**Terminal View:**
 - `R` - Reload data from file (restart from beginning)
 - `C` - Clear screen and reload
 - `L` - Loop through graph styles (blocks → lean → ascii → dots → braille)
 - `Q` - Quit the viewer
 - `Ctrl+C` - Exit
 
+**Web View:**
+- `Space` - Pause/Resume updates
+- `C` - Clear data
+- `L` - Cycle through styles (line → area → bars)
+- `R` - Reload page
+
 ### Graph Styles
 
+**Terminal Styles:**
 - **blocks** - Filled area chart with █ and ░ (default)
 - **lean** - Minimal style using : characters (great for long-term monitoring)
 - **ascii** - Traditional ASCII with /, \, ─, │
 - **dots** - Braille characters for high resolution
 - **braille** - Unicode braille patterns
+
+**Web Styles:**
+- **line** - Classic line chart with data points
+- **area** - Filled area chart with gradient
+- **bars** - Bar chart visualization
 
 ## Monitoring Your Node.js Application
 
