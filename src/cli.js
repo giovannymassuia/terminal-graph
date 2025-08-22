@@ -8,7 +8,10 @@ const HeapMonitor = require('./heap-monitor');
 const GraphViewer = require('./graph-viewer');
 const WebGraphViewer = require('./web-graph-viewer');
 
-const VERSION = '1.0.0';
+// Read version from package.json
+const packagePath = path.join(__dirname, '..', 'package.json');
+const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+const VERSION = packageJson.version;
 
 // Parse command line arguments
 const args = process.argv.slice(2);
