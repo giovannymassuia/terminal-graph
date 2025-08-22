@@ -11,7 +11,7 @@ Real-time ASCII line graphs for your terminal. Monitor memory usage, visualize d
 - **Web Dashboard**: Interactive browser-based graphs with real-time updates and multiple view modes
 - **Interactive Controls**: Reload data with 'R', clear with 'C', cycle styles with 'L', quit with 'Q' during monitoring
 - **Log File Based**: Writes metrics to files for persistence and analysis
-- **Multiple Metrics**: Monitor heap used, heap total, RSS, external memory, or heap percentage
+- **Multiple Metrics**: Monitor memory (heap used, heap total, RSS, external) and CPU (usage %, user, system, total)
 - **Data Accumulation**: Intelligent compression preserves peaks while fitting terminal width
 - **Multiple Graph Styles**: Terminal (blocks, lean, ascii, dots, braille) or Web (line, area, bars)
 - **Easy Integration**: Drop-in monitoring for any Node.js application
@@ -152,7 +152,9 @@ terminal-graph demo
 
 #### Terminal View Options
 - `--file, -f` - Log file to monitor (default: heap.log)
-- `--metric, -m` - Metric to display: **heapUsed** (recommended), heapTotal, heapPercent, rss, external
+- `--metric, -m` - Metric to display:
+  - **Memory**: heapUsed (default), heapTotal, heapPercent, rss, external
+  - **CPU**: cpuPercent, cpuUser, cpuSystem, cpuTotal
 - `--style, -s` - Graph style: blocks, lean, ascii, dots, braille
 - `--accumulate, -a` - Accumulate all data instead of rolling window
 - `--points, -p` - Maximum data points for rolling window (default: 100)
@@ -160,7 +162,9 @@ terminal-graph demo
 
 #### Web View Options
 - `--file, -f` - Log file to monitor (default: heap.log)
-- `--metric, -m` - Metric to display: **heapUsed** (recommended), heapTotal, heapPercent, rss, external
+- `--metric, -m` - Initial metric to display:
+  - **Memory**: heapUsed (default), heapTotal, heapPercent, rss, external
+  - **CPU**: cpuPercent, cpuUser, cpuSystem, cpuTotal
 - `--style, -s` - Graph style: line, area, bars
 - `--accumulate, -a` - Accumulate all data instead of rolling window
 - `--points, -p` - Maximum data points for rolling window (default: 100)
@@ -173,6 +177,7 @@ terminal-graph demo
 - `R` - Reload data from file (restart from beginning)
 - `C` - Clear screen and reload
 - `L` - Loop through graph styles (blocks → lean → ascii → dots → braille)
+- `M` - Toggle between Memory and CPU metrics
 - `Q` - Quit the viewer
 - `Ctrl+C` - Exit
 
@@ -180,8 +185,8 @@ terminal-graph demo
 - `Space` - Pause/Resume updates
 - `C` - Clear data
 - `L` - Cycle through styles (line → area → bars)
-- `M` - Cycle through view modes (Single → Multi → Compare)
-- `1-5` - Toggle metrics in Compare mode (1=heapUsed, 2=heapTotal, etc.)
+- `M` - In Single view: Toggle between Memory/CPU metrics; In other views: Cycle view modes
+- `1-9` - Toggle metrics in Compare mode (1-5 for Memory, 6-9 for CPU metrics)
 - `R` - Reload page
 
 ### Graph Styles
@@ -204,30 +209,39 @@ The web interface provides three distinct view modes for analyzing memory data:
 
 ### 📊 Single View Mode
 Traditional single-metric focus with detailed statistics:
+- Visual toggle buttons to switch between Memory and CPU metrics
 - Large main graph showing selected metric (heapUsed by default)
-- Live statistics cards showing current, average, min, max values
+- Live statistics cards showing current, average, min, max values with appropriate units (MB, %, ms)
 - Interactive controls for pause/resume, clear, and style switching
 
 ### 📈 Multi View Mode  
 Grid layout showing all metrics simultaneously:
+
+**Memory Metrics:**
 - **Heap Used**: Actual memory usage in MB - best for leak detection
 - **Heap Total**: Allocated heap size in MB - shows V8 memory allocation
 - **Heap Percent**: Usage percentage (0-100%) - normalized view across apps
 - **RSS**: Total process memory in MB - system memory impact
 - **External**: C++ objects memory in MB - native module usage
 
+**CPU Metrics:**
+- **CPU Usage %**: Overall CPU utilization percentage
+- **CPU User Time**: Time spent in user mode (ms)
+- **CPU System Time**: Time spent in system/kernel mode (ms)
+- **CPU Total Time**: Combined user + system time (ms)
+
 Each chart updates independently and can be viewed in line, area, or bar style.
 
 ### 🔀 Compare View Mode
 Overlay multiple metrics on one chart for direct comparison:
-- Select which metrics to display using checkboxes or number keys (1-5)
+- Select which metrics to display using checkboxes or number keys (1-9)
 - Each metric has a unique color for easy identification
 - Legend shows active metrics with color coding
 - Perfect for correlation analysis (e.g., heap usage vs. RSS)
 
 ### Keyboard Navigation
-- `M` - Cycle between Single → Multi → Compare modes
-- `1-5` - In Compare mode: toggle individual metrics (1=heapUsed, 2=heapTotal, etc.)
+- `M` - In Single view: Toggle between Memory/CPU metrics; In other views: Cycle modes
+- `1-9` - In Compare mode: toggle individual metrics (1-5 for Memory, 6-9 for CPU)
 - `L` - Cycle graph styles across all active charts
 - `Space` - Pause/resume real-time updates
 - `C` - Clear all data and reset charts
@@ -316,6 +330,7 @@ monitor.start();
 
 ## Understanding Metrics
 
+### Memory Metrics
 | Metric | Y-Axis Shows | Best For | Example Values |
 |--------|--------------|----------|----------------|
 | **heapUsed** | MB (actual memory) | **Memory leak detection** | 0-500MB |
@@ -324,7 +339,17 @@ monitor.start();
 | **rss** | MB (total process memory) | System memory usage | 0-2000MB |
 | **external** | MB (C++ objects) | Native memory usage | 0-100MB |
 
-**Recommended for most monitoring: `--metric heapUsed`** (shows actual MB usage)
+### CPU Metrics
+| Metric | Y-Axis Shows | Best For | Example Values |
+|--------|--------------|----------|----------------|
+| **cpuPercent** | % (0-100) | **CPU usage monitoring** | 0-100% |
+| **cpuUser** | ms (cumulative) | User mode activity | Increases over time |
+| **cpuSystem** | ms (cumulative) | System calls tracking | Increases over time |
+| **cpuTotal** | ms (cumulative) | Total CPU time | Increases over time |
+
+**Recommended defaults:**
+- Memory monitoring: `--metric heapUsed` (shows actual MB usage)
+- CPU monitoring: `--metric cpuPercent` (shows utilization %)
 
 ## Example Output
 
@@ -383,7 +408,18 @@ terminal-graph view --file app.log --style lean --points 50 --refresh 1000
 The log file contains JSON lines with memory metrics:
 
 ```json
-{"timestamp":1234567890,"heapUsed":"12.34","heapTotal":"56.78","external":"1.23","rss":"90.12","heapPercent":"21.74"}
+{
+  "timestamp": 1234567890,
+  "heapUsed": "12.34",
+  "heapTotal": "56.78",
+  "heapPercent": "21.74",
+  "rss": "90.12",
+  "external": "1.23",
+  "cpuPercent": "15.25",
+  "cpuUser": "123.45",
+  "cpuSystem": "67.89",
+  "cpuTotal": "191.34"
+}
 ```
 
 ## Features Explained
