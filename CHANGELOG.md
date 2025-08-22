@@ -1,3 +1,21 @@
+## [1.3.0](https://github.com/giovannymassuia/terminal-graph/compare/v1.2.0...v1.3.0) (2025-08-22)
+
+
+### 🚀 Features
+
+* add resolution slider control to web dashboard UI ([87ece7d](https://github.com/giovannymassuia/terminal-graph/commit/87ece7dffbf3488a5ec25a93771930bc909a85c9))
+* implement intelligent resolution control for web dashboard ([3562f31](https://github.com/giovannymassuia/terminal-graph/commit/3562f31e0da06266a00f5f04223e1974c2759f4c))
+
+
+### 🐛 Bug Fixes
+
+* read version from package.json instead of hardcoded value ([6b957da](https://github.com/giovannymassuia/terminal-graph/commit/6b957da4ac6639b4cf6fde8857a2d24918504d8c))
+
+
+### ✅ Tests
+
+* add large dataset generator for resolution control testing ([e70392b](https://github.com/giovannymassuia/terminal-graph/commit/e70392b5a2540b79be1aca72bac24b1ec3865fd1))
+
 ## [1.2.0](https://github.com/giovannymassuia/terminal-graph/compare/v1.1.0...v1.2.0) (2025-08-22)
 
 
