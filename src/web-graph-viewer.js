@@ -11,6 +11,7 @@ class WebGraphViewer {
     this.logFile = options.logFile || 'heap.log';
     this.metric = options.metric || 'heapUsed';
     this.maxDataPoints = options.maxDataPoints || 100;
+    this.resolution = options.resolution || 100; // Current resolution for web display
     this.refreshRate = options.refreshRate || 100;
     this.accumulate = options.accumulate || false;
     this.style = options.style || 'line'; // line, area, bars
@@ -226,6 +227,8 @@ class WebGraphViewer {
         this.serveSSE(req, res);
       } else if (url.pathname === '/config') {
         this.serveConfig(res);
+      } else if (url.pathname === '/resolution') {
+        this.handleResolution(req, res);
       } else {
         res.writeHead(404);
         res.end('Not found');
@@ -249,16 +252,26 @@ class WebGraphViewer {
   }
 
   serveData(res) {
+    // Apply compression to all metrics data based on current resolution
+    const compressedMetricsData = {};
+    Object.keys(this.allMetricsData).forEach(metric => {
+      compressedMetricsData[metric] = this.compressData(this.allMetricsData[metric], this.resolution);
+    });
+
+    // Compress the primary data points too
+    const compressedDataPoints = this.compressData(this.dataPoints, this.resolution);
+
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
-      dataPoints: this.dataPoints,
-      allMetricsData: this.allMetricsData,
+      dataPoints: compressedDataPoints,
+      allMetricsData: compressedMetricsData,
       metric: this.metric,
       metricLabel: this.getMetricLabel(),
       accumulate: this.accumulate,
       maxDataPoints: this.maxDataPoints,
-      stats: this.calculateStats(),
-      allStats: this.calculateAllStats()
+      resolution: this.resolution,
+      stats: this.calculateStats(compressedDataPoints),
+      allStats: this.calculateAllStats() // Stats from original data
     }));
   }
 
@@ -269,10 +282,42 @@ class WebGraphViewer {
       metricLabel: this.getMetricLabel(),
       accumulate: this.accumulate,
       maxDataPoints: this.maxDataPoints,
+      resolution: this.resolution,
       refreshRate: this.refreshRate,
       style: this.style,
       logFile: this.logFile
     }));
+  }
+
+  handleResolution(req, res) {
+    if (req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => {
+        body += chunk.toString();
+      });
+      req.on('end', () => {
+        try {
+          const data = JSON.parse(body);
+          if (data.resolution && data.resolution >= 50 && data.resolution <= 1000) {
+            this.resolution = parseInt(data.resolution);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, resolution: this.resolution }));
+            
+            // Broadcast update to all connected clients
+            this.broadcastUpdate();
+          } else {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Resolution must be between 50 and 1000' }));
+          }
+        } catch (error) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid JSON' }));
+        }
+      });
+    } else {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ resolution: this.resolution }));
+    }
   }
 
   serveSSE(req, res) {
@@ -286,12 +331,19 @@ class WebGraphViewer {
     const connection = { req, res };
     this.connections.add(connection);
 
-    // Send initial data
+    // Send initial data with compression
+    const compressedMetricsData = {};
+    Object.keys(this.allMetricsData).forEach(metric => {
+      compressedMetricsData[metric] = this.compressData(this.allMetricsData[metric], this.resolution);
+    });
+    const compressedDataPoints = this.compressData(this.dataPoints, this.resolution);
+
     res.write(`data: ${JSON.stringify({
       type: 'update',
-      dataPoints: this.dataPoints,
-      allMetricsData: this.allMetricsData,
-      stats: this.calculateStats(),
+      dataPoints: compressedDataPoints,
+      allMetricsData: compressedMetricsData,
+      resolution: this.resolution,
+      stats: this.calculateStats(compressedDataPoints),
       allStats: this.calculateAllStats()
     })}\n\n`);
 
@@ -301,11 +353,19 @@ class WebGraphViewer {
   }
 
   broadcastUpdate() {
+    // Apply compression for broadcast
+    const compressedMetricsData = {};
+    Object.keys(this.allMetricsData).forEach(metric => {
+      compressedMetricsData[metric] = this.compressData(this.allMetricsData[metric], this.resolution);
+    });
+    const compressedDataPoints = this.compressData(this.dataPoints, this.resolution);
+
     const data = JSON.stringify({
       type: 'update',
-      dataPoints: this.dataPoints,
-      allMetricsData: this.allMetricsData,
-      stats: this.calculateStats(),
+      dataPoints: compressedDataPoints,
+      allMetricsData: compressedMetricsData,
+      resolution: this.resolution,
+      stats: this.calculateStats(compressedDataPoints),
       allStats: this.calculateAllStats()
     });
 
@@ -341,6 +401,67 @@ class WebGraphViewer {
       stats[metric] = this.calculateStats(this.allMetricsData[metric]);
     });
     return stats;
+  }
+
+  // Peak-preserving data compression (similar to terminal renderer)
+  compressData(dataPoints, targetWidth) {
+    if (!dataPoints || dataPoints.length <= targetWidth) {
+      return dataPoints;
+    }
+
+    const compressionRatio = dataPoints.length / targetWidth;
+    const compressed = [];
+    
+    for (let i = 0; i < targetWidth; i++) {
+      const startIdx = Math.floor(i * compressionRatio);
+      const endIdx = Math.floor((i + 1) * compressionRatio);
+      
+      // Find min, max, and average in this segment
+      let segmentMin = Infinity;
+      let segmentMax = -Infinity;
+      let sum = 0;
+      let count = 0;
+      let lastTimestamp = 0;
+      let lastTime = null;
+      
+      for (let j = startIdx; j < endIdx && j < dataPoints.length; j++) {
+        const point = dataPoints[j];
+        const val = point.value;
+        segmentMin = Math.min(segmentMin, val);
+        segmentMax = Math.max(segmentMax, val);
+        sum += val;
+        count++;
+        lastTimestamp = point.timestamp || Date.now();
+        lastTime = point.time;
+      }
+      
+      if (count > 0) {
+        // Decide which value to use based on variation
+        const avg = sum / count;
+        const variation = segmentMax - segmentMin;
+        
+        // If high variation, prefer extremes to preserve peaks
+        let value;
+        if (variation > (segmentMax * 0.1)) {
+          // Use max if it's likely a peak, min if it's likely a valley
+          if (Math.abs(segmentMax - avg) > Math.abs(segmentMin - avg)) {
+            value = segmentMax;
+          } else {
+            value = segmentMin;
+          }
+        } else {
+          value = avg;
+        }
+        
+        compressed.push({
+          value: value,
+          timestamp: lastTimestamp,
+          time: lastTime
+        });
+      }
+    }
+    
+    return compressed;
   }
 
   stop() {
