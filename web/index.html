@@ -193,12 +193,50 @@
         .metric-checkbox.heapPercent label { color: #f48771; }
         .metric-checkbox.rss label { color: #dcdcaa; }
         .metric-checkbox.external label { color: #c586c0; }
+        .metric-checkbox.cpuPercent label { color: #ff6b6b; }
+        .metric-checkbox.cpuUser label { color: #4ecdc4; }
+        .metric-checkbox.cpuSystem label { color: #45b7d1; }
+        .metric-checkbox.cpuTotal label { color: #f9ca24; }
 
         .stats-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
             margin-bottom: 20px;
+        }
+        
+        .metric-toggle-group {
+            display: flex;
+            background: #2d2d30;
+            border-radius: 8px;
+            padding: 4px;
+            gap: 4px;
+        }
+        
+        .metric-toggle-btn {
+            flex: 1;
+            padding: 10px 24px;
+            background: transparent;
+            border: none;
+            color: #969696;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .metric-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .metric-toggle-btn.active {
+            background: #007ACC;
+            color: white;
         }
 
         .stat-card {
@@ -365,6 +403,11 @@
             .stats-container {
                 grid-template-columns: repeat(2, 1fr);
             }
+            
+            .metric-toggle-group {
+                width: 100%;
+                max-width: 300px;
+            }
 
         }
     </style>
@@ -397,56 +440,95 @@
 
         <!-- Metric selector for compare view -->
         <div id="metricSelector" class="metric-selector hidden">
-            <div class="metric-checkbox heapUsed">
-                <input type="checkbox" id="metric-heapUsed" value="heapUsed" checked>
-                <label for="metric-heapUsed">Heap Used</label>
-            </div>
-            <div class="metric-checkbox heapTotal">
-                <input type="checkbox" id="metric-heapTotal" value="heapTotal">
-                <label for="metric-heapTotal">Heap Total</label>
-            </div>
-            <div class="metric-checkbox heapPercent">
-                <input type="checkbox" id="metric-heapPercent" value="heapPercent">
-                <label for="metric-heapPercent">Heap Percent</label>
-            </div>
-            <div class="metric-checkbox rss">
-                <input type="checkbox" id="metric-rss" value="rss">
-                <label for="metric-rss">RSS</label>
-            </div>
-            <div class="metric-checkbox external">
-                <input type="checkbox" id="metric-external" value="external">
-                <label for="metric-external">External</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; width: 100%;">
+                <div style="display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 200px;">
+                    <strong style="color: #9cdcfe; font-size: 0.9em;">Memory Metrics</strong>
+                    <div class="metric-checkbox heapUsed">
+                        <input type="checkbox" id="metric-heapUsed" value="heapUsed" checked>
+                        <label for="metric-heapUsed">Heap Used</label>
+                    </div>
+                    <div class="metric-checkbox heapTotal">
+                        <input type="checkbox" id="metric-heapTotal" value="heapTotal">
+                        <label for="metric-heapTotal">Heap Total</label>
+                    </div>
+                    <div class="metric-checkbox heapPercent">
+                        <input type="checkbox" id="metric-heapPercent" value="heapPercent">
+                        <label for="metric-heapPercent">Heap Percent</label>
+                    </div>
+                    <div class="metric-checkbox rss">
+                        <input type="checkbox" id="metric-rss" value="rss">
+                        <label for="metric-rss">RSS</label>
+                    </div>
+                    <div class="metric-checkbox external">
+                        <input type="checkbox" id="metric-external" value="external">
+                        <label for="metric-external">External</label>
+                    </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 200px;">
+                    <strong style="color: #9cdcfe; font-size: 0.9em;">CPU Metrics</strong>
+                    <div class="metric-checkbox cpuPercent">
+                        <input type="checkbox" id="metric-cpuPercent" value="cpuPercent">
+                        <label for="metric-cpuPercent">CPU Percent</label>
+                    </div>
+                    <div class="metric-checkbox cpuUser">
+                        <input type="checkbox" id="metric-cpuUser" value="cpuUser">
+                        <label for="metric-cpuUser">CPU User</label>
+                    </div>
+                    <div class="metric-checkbox cpuSystem">
+                        <input type="checkbox" id="metric-cpuSystem" value="cpuSystem">
+                        <label for="metric-cpuSystem">CPU System</label>
+                    </div>
+                    <div class="metric-checkbox cpuTotal">
+                        <input type="checkbox" id="metric-cpuTotal" value="cpuTotal">
+                        <label for="metric-cpuTotal">CPU Total</label>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Single view stats -->
-        <div id="singleStats" class="stats-container">
-            <div class="stat-card">
-                <div class="stat-label">Current</div>
-                <div class="stat-value">
-                    <span id="currentValue">0</span>
-                    <span class="stat-unit" id="currentUnit">MB</span>
+        <div id="singleStats">
+            <!-- Metric toggle -->
+            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                <div class="metric-toggle-group">
+                    <button id="memoryToggleBtn" class="metric-toggle-btn active">
+                        <span style="font-size: 1.2em;">💾</span> Memory
+                    </button>
+                    <button id="cpuToggleBtn" class="metric-toggle-btn">
+                        <span style="font-size: 1.2em;">⚡</span> CPU
+                    </button>
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Average</div>
-                <div class="stat-value">
-                    <span id="averageValue">0</span>
-                    <span class="stat-unit" id="averageUnit">MB</span>
+            
+            <!-- Stats cards -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-label">Current</div>
+                    <div class="stat-value">
+                        <span id="currentValue">0</span>
+                        <span class="stat-unit" id="currentUnit">MB</span>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Minimum</div>
-                <div class="stat-value">
-                    <span id="minValue">0</span>
-                    <span class="stat-unit" id="minUnit">MB</span>
+                <div class="stat-card">
+                    <div class="stat-label">Average</div>
+                    <div class="stat-value">
+                        <span id="averageValue">0</span>
+                        <span class="stat-unit" id="averageUnit">MB</span>
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">Maximum</div>
-                <div class="stat-value">
-                    <span id="maxValue">0</span>
-                    <span class="stat-unit" id="maxUnit">MB</span>
+                <div class="stat-card">
+                    <div class="stat-label">Minimum</div>
+                    <div class="stat-value">
+                        <span id="minValue">0</span>
+                        <span class="stat-unit" id="minUnit">MB</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Maximum</div>
+                    <div class="stat-value">
+                        <span id="maxValue">0</span>
+                        <span class="stat-unit" id="maxUnit">MB</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -458,25 +540,55 @@
 
         <!-- Multi chart grid/list -->
         <div id="multiChartContainer" class="multi-chart-container hidden">
-            <div class="chart-item">
-                <div class="graph-title">Heap Used (MB)</div>
-                <canvas id="heapUsedCanvas" width="600" height="200"></canvas>
-            </div>
-            <div class="chart-item">
-                <div class="graph-title">Heap Total (MB)</div>
-                <canvas id="heapTotalCanvas" width="600" height="200"></canvas>
-            </div>
-            <div class="chart-item">
-                <div class="graph-title">Heap Percent (%)</div>
-                <canvas id="heapPercentCanvas" width="600" height="200"></canvas>
-            </div>
-            <div class="chart-item">
-                <div class="graph-title">RSS Memory (MB)</div>
-                <canvas id="rssCanvas" width="600" height="200"></canvas>
-            </div>
-            <div class="chart-item">
-                <div class="graph-title">External Memory (MB)</div>
-                <canvas id="externalCanvas" width="600" height="200"></canvas>
+            <div style="display: flex; flex-direction: column; gap: 20px; width: 100%;">
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; width: 100%;">
+                    <div style="flex: 1; min-width: 400px;">
+                        <h3 style="color: #9cdcfe; margin-bottom: 15px; font-size: 1.1em;">Memory Metrics</h3>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div class="chart-item">
+                                <div class="graph-title">Heap Used (MB)</div>
+                                <canvas id="heapUsedCanvas" width="600" height="200"></canvas>
+                            </div>
+                            <div class="chart-item">
+                                <div class="graph-title">Heap Total (MB)</div>
+                                <canvas id="heapTotalCanvas" width="600" height="200"></canvas>
+                            </div>
+                            <div class="chart-item">
+                                <div class="graph-title">Heap Percent (%)</div>
+                                <canvas id="heapPercentCanvas" width="600" height="200"></canvas>
+                            </div>
+                            <div class="chart-item">
+                                <div class="graph-title">RSS Memory (MB)</div>
+                                <canvas id="rssCanvas" width="600" height="200"></canvas>
+                            </div>
+                            <div class="chart-item">
+                                <div class="graph-title">External Memory (MB)</div>
+                                <canvas id="externalCanvas" width="600" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="flex: 1; min-width: 400px;">
+                        <h3 style="color: #9cdcfe; margin-bottom: 15px; font-size: 1.1em;">CPU Metrics</h3>
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                            <div class="chart-item">
+                                <div class="graph-title">CPU Usage (%)</div>
+                                <canvas id="cpuPercentCanvas" width="600" height="200"></canvas>
+                            </div>
+                            <div class="chart-item">
+                                <div class="graph-title">CPU User Time (ms)</div>
+                                <canvas id="cpuUserCanvas" width="600" height="200"></canvas>
+                            </div>
+                            <div class="chart-item">
+                                <div class="graph-title">CPU System Time (ms)</div>
+                                <canvas id="cpuSystemCanvas" width="600" height="200"></canvas>
+                            </div>
+                            <div class="chart-item">
+                                <div class="graph-title">CPU Total Time (ms)</div>
+                                <canvas id="cpuTotalCanvas" width="600" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -506,8 +618,8 @@
             <kbd>Space</kbd> Pause/Resume
             <kbd>C</kbd> Clear Data
             <kbd>L</kbd> Cycle Styles
-            <kbd>M</kbd> Cycle View Modes
-            <kbd>1-5</kbd> Toggle Metrics (Compare mode)
+            <kbd>M</kbd> Toggle Metric (Single) / Cycle Views
+            <kbd>1-9</kbd> Toggle Metrics (Compare mode)
             <kbd>R</kbd> Reload
         </div>
 
@@ -528,12 +640,17 @@
                     grid: '#3c3c3c',
                     text: '#808080',
                     area: 'rgba(78, 201, 176, 0.2)',
-                    // Metric-specific colors
+                    // Memory metric colors
                     heapUsed: '#4ec9b0',
                     heapTotal: '#9cdcfe',
                     heapPercent: '#f48771',
                     rss: '#dcdcaa',
-                    external: '#c586c0'
+                    external: '#c586c0',
+                    // CPU metric colors
+                    cpuPercent: '#ff6b6b',
+                    cpuUser: '#4ecdc4',
+                    cpuSystem: '#45b7d1',
+                    cpuTotal: '#f9ca24'
                 };
                 this.padding = { top: 20, right: 20, bottom: 40, left: 60 };
                 this.isPaused = false;
@@ -601,7 +718,14 @@
 
             showTooltip(point, mouseX, mouseY) {
                 const tooltip = document.getElementById('tooltip');
-                const unit = this.canvas.id === 'heapPercentCanvas' ? '%' : 'MB';
+                
+                // Determine unit based on canvas ID
+                let unit = 'MB';
+                if (this.canvas.id === 'heapPercentCanvas' || this.canvas.id === 'cpuPercentCanvas') {
+                    unit = '%';
+                } else if (this.canvas.id.includes('cpu') && this.canvas.id !== 'cpuPercentCanvas') {
+                    unit = 'ms';
+                }
                 
                 tooltip.innerHTML = `
                     <div class="value">${point.value.toFixed(2)} ${unit}</div>
@@ -936,11 +1060,17 @@
 
             getMetricLabel(metric) {
                 const labels = {
+                    // Memory metrics
                     heapUsed: 'Heap Used',
                     heapTotal: 'Heap Total',
                     heapPercent: 'Heap %',
                     rss: 'RSS',
-                    external: 'External'
+                    external: 'External',
+                    // CPU metrics
+                    cpuPercent: 'CPU %',
+                    cpuUser: 'CPU User',
+                    cpuSystem: 'CPU System',
+                    cpuTotal: 'CPU Total'
                 };
                 return labels[metric] || metric;
             }
@@ -953,6 +1083,7 @@
         let selectedMetrics = ['heapUsed'];
         let allMetricsData = {};
         let eventSource = null;
+        let currentSingleMetric = null; // Track current metric in Single view
 
         // Initialize
         document.addEventListener('DOMContentLoaded', async () => {
@@ -961,7 +1092,7 @@
             renderers.compare = new GraphRenderer(document.getElementById('compareCanvas'), { showLegend: true });
             
             // Initialize multi-chart renderers
-            const metrics = ['heapUsed', 'heapTotal', 'heapPercent', 'rss', 'external'];
+            const metrics = ['heapUsed', 'heapTotal', 'heapPercent', 'rss', 'external', 'cpuPercent', 'cpuUser', 'cpuSystem', 'cpuTotal'];
             metrics.forEach(metric => {
                 const canvas = document.getElementById(`${metric}Canvas`);
                 if (canvas) {
@@ -980,7 +1111,77 @@
 
             // Set up keyboard shortcuts
             setupKeyboardShortcuts();
+            
+            // Set up toggle button listeners
+            document.getElementById('memoryToggleBtn')?.addEventListener('click', () => {
+                setSingleViewMetric('heapUsed');
+            });
+            
+            document.getElementById('cpuToggleBtn')?.addEventListener('click', () => {
+                setSingleViewMetric('cpuPercent');
+            });
         });
+
+        function updateSingleViewUnits(metric) {
+            let unit = 'MB';
+            if (metric === 'heapPercent' || metric === 'cpuPercent') {
+                unit = '%';
+            } else if (metric && metric.includes('cpu') && metric !== 'cpuPercent') {
+                unit = 'ms';
+            }
+            document.querySelectorAll('.stat-unit').forEach(el => {
+                el.textContent = unit;
+            });
+        }
+
+        function setSingleViewMetric(metric) {
+            currentSingleMetric = metric;
+            
+            // Update button states
+            const memoryBtn = document.getElementById('memoryToggleBtn');
+            const cpuBtn = document.getElementById('cpuToggleBtn');
+            
+            if (metric.includes('cpu')) {
+                memoryBtn?.classList.remove('active');
+                cpuBtn?.classList.add('active');
+            } else {
+                memoryBtn?.classList.add('active');
+                cpuBtn?.classList.remove('active');
+            }
+            
+            // Update units
+            updateSingleViewUnits(currentSingleMetric);
+            
+            // Update the displayed data
+            if (allMetricsData[currentSingleMetric]) {
+                renderers.single.setData(allMetricsData[currentSingleMetric]);
+                updateSingleViewStats(allMetricsData[currentSingleMetric]);
+            }
+        }
+        
+        function toggleSingleViewMetric() {
+            // Toggle between memory and CPU modes
+            if (currentSingleMetric && currentSingleMetric.includes('cpu')) {
+                setSingleViewMetric('heapUsed');
+            } else {
+                setSingleViewMetric('cpuPercent');
+            }
+        }
+
+        function updateSingleViewStats(data) {
+            if (!data || data.length === 0) return;
+            
+            const values = data.map(d => d.value);
+            const current = values[values.length - 1];
+            const average = values.reduce((a, b) => a + b, 0) / values.length;
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            
+            document.getElementById('currentValue').textContent = current.toFixed(2);
+            document.getElementById('averageValue').textContent = average.toFixed(2);
+            document.getElementById('minValue').textContent = min.toFixed(2);
+            document.getElementById('maxValue').textContent = max.toFixed(2);
+        }
 
         async function loadConfig() {
             try {
@@ -991,11 +1192,8 @@
                 document.getElementById('logFile').textContent = config.logFile;
                 document.getElementById('styleSelect').value = config.style;
                 
-                // Update units
-                const unit = config.metric === 'heapPercent' ? '%' : 'MB';
-                document.querySelectorAll('.stat-unit').forEach(el => {
-                    el.textContent = unit;
-                });
+                // Set initial single metric from config
+                setSingleViewMetric(config.metric || 'heapUsed');
             } catch (error) {
                 showError('Failed to load configuration');
             }
@@ -1036,15 +1234,10 @@
             
             // Update based on current view mode
             if (currentViewMode === 'single') {
-                // Update single graph
-                renderers.single.setData(data.dataPoints || []);
-                
-                // Update stats
-                if (data.stats) {
-                    document.getElementById('currentValue').textContent = data.stats.current;
-                    document.getElementById('averageValue').textContent = data.stats.average;
-                    document.getElementById('minValue').textContent = data.stats.min;
-                    document.getElementById('maxValue').textContent = data.stats.max;
+                // Update single graph with selected metric
+                if (allMetricsData[currentSingleMetric]) {
+                    renderers.single.setData(allMetricsData[currentSingleMetric]);
+                    updateSingleViewStats(allMetricsData[currentSingleMetric]);
                 }
             } else if (currentViewMode === 'multi') {
                 // Update all metric charts
@@ -1152,12 +1345,13 @@
             } else if (mode === 'multi') {
                 document.getElementById('multiViewBtn').classList.add('active');
                 document.getElementById('multiChartContainer').classList.remove('hidden');
-                // Trigger resize for all multi charts
+                // Update and resize all multi charts
                 setTimeout(() => {
-                    console.log('Resizing multi charts...'); // Debug log
+                    console.log('Updating multi charts...'); // Debug log
                     Object.keys(allMetricsData).forEach(metric => {
-                        if (renderers[metric]) {
-                            console.log(`Resizing ${metric} canvas...`); // Debug log
+                        if (renderers[metric] && allMetricsData[metric]) {
+                            console.log(`Updating ${metric} with ${allMetricsData[metric].length} points`); // Debug log
+                            renderers[metric].setData(allMetricsData[metric]);
                             renderers[metric].resizeCanvas();
                         }
                     });
@@ -1188,7 +1382,13 @@
                         cycleStyle();
                         break;
                     case 'm':
-                        cycleViewMode();
+                        if (currentViewMode === 'single') {
+                            // In Single view, toggle between CPU and Memory metrics
+                            toggleSingleViewMetric();
+                        } else {
+                            // In other views, cycle through view modes
+                            cycleViewMode();
+                        }
                         break;
                     case 'r':
                         location.reload();
@@ -1208,6 +1408,18 @@
                         break;
                     case '5':
                         if (currentViewMode === 'compare') toggleMetric('external');
+                        break;
+                    case '6':
+                        if (currentViewMode === 'compare') toggleMetric('cpuPercent');
+                        break;
+                    case '7':
+                        if (currentViewMode === 'compare') toggleMetric('cpuUser');
+                        break;
+                    case '8':
+                        if (currentViewMode === 'compare') toggleMetric('cpuSystem');
+                        break;
+                    case '9':
+                        if (currentViewMode === 'compare') toggleMetric('cpuTotal');
                         break;
                 }
             });

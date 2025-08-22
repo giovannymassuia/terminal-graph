@@ -17,13 +17,19 @@ class WebGraphViewer {
     this.port = options.port || 3456;
     this.autoOpen = options.autoOpen !== false; // default true
     
-    // Store all metrics data
+    // Store all metrics data - both memory and CPU
     this.allMetricsData = {
+      // Memory metrics
       heapUsed: [],
       heapTotal: [],
       heapPercent: [],
       rss: [],
-      external: []
+      external: [],
+      // CPU metrics
+      cpuPercent: [],
+      cpuUser: [],
+      cpuSystem: [],
+      cpuTotal: []
     };
     this.dataPoints = []; // Keep for backward compatibility
     this.rawData = []; // Store raw data for all metrics
@@ -166,30 +172,46 @@ class WebGraphViewer {
   extractMetricValue(data, metricName = null) {
     const metric = metricName || this.metric;
     switch (metric) {
+      // Memory metrics
       case 'heapUsed':
-        return parseFloat(data.heapUsed);
+        return parseFloat(data.heapUsed || 0);
       case 'heapTotal':
-        return parseFloat(data.heapTotal);
+        return parseFloat(data.heapTotal || 0);
       case 'heapPercent':
-        return parseFloat(data.heapPercent);
+        return parseFloat(data.heapPercent || 0);
       case 'rss':
-        return parseFloat(data.rss);
+        return parseFloat(data.rss || 0);
       case 'external':
-        return parseFloat(data.external);
+        return parseFloat(data.external || 0);
+      // CPU metrics
+      case 'cpuPercent':
+        return parseFloat(data.cpuPercent || 0);
+      case 'cpuUser':
+        return parseFloat(data.cpuUser || 0);
+      case 'cpuSystem':
+        return parseFloat(data.cpuSystem || 0);
+      case 'cpuTotal':
+        return parseFloat(data.cpuTotal || 0);
       default:
-        return parseFloat(data.heapUsed);
+        return parseFloat(data.heapUsed || 0);
     }
   }
 
   getMetricLabel() {
     const labels = {
+      // Memory metrics
       heapUsed: 'Heap Used (MB)',
       heapTotal: 'Heap Total (MB)',
       heapPercent: 'Heap Usage (%)',
       rss: 'RSS Memory (MB)',
-      external: 'External Memory (MB)'
+      external: 'External Memory (MB)',
+      // CPU metrics
+      cpuPercent: 'CPU Usage (%)',
+      cpuUser: 'CPU User Time (ms)',
+      cpuSystem: 'CPU System Time (ms)',
+      cpuTotal: 'CPU Total Time (ms)'
     };
-    return labels[this.metric] || 'Memory';
+    return labels[this.metric] || 'Resource';
   }
 
   createServer() {
