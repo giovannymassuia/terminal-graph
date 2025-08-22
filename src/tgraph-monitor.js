@@ -24,7 +24,7 @@ if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
 
 function showHelp() {
   console.log(`
-tgraph-monitor - Wrap any Node.js command with memory monitoring
+tgraph-monitor - Wrap any Node.js command with resource monitoring
 
 Usage:
   tgraph-monitor <command> [args...]
@@ -39,15 +39,22 @@ Examples:
 Options:
   --log-file <file>     Log file name (default: memory-monitor.log)
   --interval <ms>       Monitoring interval (default: 500ms)
+  --metric <name>       Default metric to suggest for viewing (default: heapUsed)
+  --no-cpu             Disable CPU monitoring (memory only)
   --help, -h           Show this help
 
 Environment Variables:
   TGRAPH_LOG_FILE       Override log file name
   TGRAPH_INTERVAL       Override monitoring interval
   TGRAPH_METRIC         Default metric for viewing (default: heapUsed)
+  DISABLE_CPU_MONITOR   Set to 'true' to disable CPU monitoring
 
 After starting, view the graph in another terminal:
-  terminal-graph view --file memory-monitor.log --accumulate --style lean
+  # Memory monitoring:
+  terminal-graph view --file memory-monitor.log --metric heapUsed --accumulate --style lean
+  
+  # CPU monitoring:
+  terminal-graph view --file memory-monitor.log --metric cpuPercent --accumulate --style lean
 `);
 }
 
@@ -55,6 +62,7 @@ After starting, view the graph in another terminal:
 let logFile = process.env.TGRAPH_LOG_FILE || 'memory-monitor.log';
 let interval = parseInt(process.env.TGRAPH_INTERVAL) || 500;
 let metric = process.env.TGRAPH_METRIC || 'heapUsed';
+let includeCpu = process.env.DISABLE_CPU_MONITOR !== 'true'; // Default to enabled
 
 const filteredArgs = [];
 for (let i = 0; i < args.length; i++) {
@@ -62,6 +70,10 @@ for (let i = 0; i < args.length; i++) {
     logFile = args[++i];
   } else if (args[i] === '--interval') {
     interval = parseInt(args[++i]);
+  } else if (args[i] === '--no-cpu') {
+    includeCpu = false;
+  } else if (args[i] === '--metric') {
+    metric = args[++i];
   } else {
     filteredArgs.push(args[i]);
   }
@@ -77,11 +89,18 @@ const command = filteredArgs[0];
 const commandArgs = filteredArgs.slice(1);
 
 console.log(`🎯 Starting tgraph-monitor`);
-console.log(`📊 Memory will be logged to: ${logFile}`);
+console.log(`📊 Resources will be logged to: ${logFile}`);
 console.log(`⏱️  Monitoring interval: ${interval}ms`);
+console.log(`💾 Memory monitoring: enabled`);
+console.log(`🖥️  CPU monitoring: ${includeCpu ? 'enabled' : 'disabled'}`);
 console.log(`🚀 Running: ${command} ${commandArgs.join(' ')}`);
 console.log(`\n📈 View graph in another terminal:`);
+console.log(`   # Current metric (${metric}):`);
 console.log(`   terminal-graph view --file ${logFile} --metric ${metric} --accumulate --style lean`);
+if (includeCpu) {
+  console.log(`   # Memory mode: --metric heapUsed`);
+  console.log(`   # CPU mode: --metric cpuPercent`);
+}
 console.log(`\nPress Ctrl+C to stop both monitoring and the process\n`);
 
 // Clean up old log file
@@ -101,17 +120,45 @@ try {
   process.exit(1);
 }
 
-function logMemoryUsage() {
+// CPU monitoring state
+let previousCpuUsage = ${includeCpu ? 'process.cpuUsage()' : 'null'};
+let previousTime = ${includeCpu ? 'process.hrtime.bigint()' : 'null'};
+
+function logResourceUsage() {
   try {
     const memUsage = process.memoryUsage();
     const data = {
       timestamp: Date.now(),
+      // Memory metrics
       heapUsed: (memUsage.heapUsed / 1024 / 1024).toFixed(2),
       heapTotal: (memUsage.heapTotal / 1024 / 1024).toFixed(2),
       heapPercent: ((memUsage.heapUsed / memUsage.heapTotal) * 100).toFixed(2),
       rss: (memUsage.rss / 1024 / 1024).toFixed(2),
       external: (memUsage.external / 1024 / 1024).toFixed(2)
     };
+    
+    // Add CPU metrics if enabled
+    if (${includeCpu} && previousCpuUsage && previousTime) {
+      const currentCpuUsage = process.cpuUsage(previousCpuUsage);
+      const currentTime = process.hrtime.bigint();
+      
+      // Calculate elapsed time in microseconds
+      const elapsedTimeUs = Number(currentTime - previousTime) / 1000;
+      
+      // Calculate CPU percentage
+      const totalCpuTimeUs = currentCpuUsage.user + currentCpuUsage.system;
+      const cpuPercent = elapsedTimeUs > 0 ? (totalCpuTimeUs / elapsedTimeUs) * 100 : 0;
+      
+      // Add CPU metrics to data
+      data.cpuPercent = Math.min(cpuPercent, 100).toFixed(2);
+      data.cpuUser = (currentCpuUsage.user / 1000).toFixed(2);
+      data.cpuSystem = (currentCpuUsage.system / 1000).toFixed(2);
+      data.cpuTotal = ((currentCpuUsage.user + currentCpuUsage.system) / 1000).toFixed(2);
+      
+      // Update for next measurement
+      previousCpuUsage = process.cpuUsage();
+      previousTime = process.hrtime.bigint();
+    }
     
     stream.write(JSON.stringify(data) + '\\n');
   } catch (error) {
@@ -120,7 +167,7 @@ function logMemoryUsage() {
 }
 
 // Start monitoring
-const monitorInterval = setInterval(logMemoryUsage, ${interval});
+const monitorInterval = setInterval(logResourceUsage, ${interval});
 
 // Cleanup on exit
 const cleanup = () => {
@@ -135,7 +182,7 @@ process.on('SIGTERM', cleanup);
 process.on('exit', cleanup);
 
 // Log initial state
-logMemoryUsage();
+logResourceUsage();
 `;
 
 // Create a temporary file with monitoring code

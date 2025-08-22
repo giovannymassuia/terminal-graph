@@ -13,19 +13,31 @@ class MemoryMonitor {
     this.interval = options.interval || 1000; // 1 second default
     this.includeGC = options.includeGC || false;
     this.includeCustomMetrics = options.includeCustomMetrics || false;
+    this.includeCpu = options.includeCpu !== false; // Default to true, can be disabled
     this.customMetrics = new Map();
     this.intervalId = null;
     this.stream = null;
     this.startTime = Date.now();
+    
+    // CPU monitoring state
+    this.previousCpuUsage = null;
+    this.previousTime = null;
   }
 
   /**
-   * Start monitoring memory usage
+   * Start monitoring memory and CPU usage
    */
   start() {
-    console.log(`📊 Memory monitoring started: ${this.logFile}`);
+    console.log(`📊 Resource monitoring started: ${this.logFile}`);
+    console.log(`📊 CPU monitoring: ${this.includeCpu ? 'enabled' : 'disabled'}`);
     
     this.stream = fs.createWriteStream(this.logFile, { flags: 'a' });
+    
+    // Initialize CPU monitoring if enabled
+    if (this.includeCpu) {
+      this.previousCpuUsage = process.cpuUsage();
+      this.previousTime = process.hrtime.bigint();
+    }
     
     this.intervalId = setInterval(() => {
       this.captureMemoryData();
@@ -67,7 +79,7 @@ class MemoryMonitor {
   }
 
   /**
-   * Capture and log memory data
+   * Capture and log memory and CPU data
    */
   captureMemoryData() {
     const memUsage = process.memoryUsage();
@@ -85,6 +97,29 @@ class MemoryMonitor {
       // Additional useful metrics
       arrayBuffers: (memUsage.arrayBuffers / 1024 / 1024).toFixed(2)
     };
+
+    // Add CPU metrics if enabled
+    if (this.includeCpu && this.previousCpuUsage && this.previousTime) {
+      const currentCpuUsage = process.cpuUsage(this.previousCpuUsage);
+      const currentTime = process.hrtime.bigint();
+      
+      // Calculate elapsed time in microseconds
+      const elapsedTimeUs = Number(currentTime - this.previousTime) / 1000;
+      
+      // Calculate CPU percentage
+      const totalCpuTimeUs = currentCpuUsage.user + currentCpuUsage.system;
+      const cpuPercent = elapsedTimeUs > 0 ? (totalCpuTimeUs / elapsedTimeUs) * 100 : 0;
+      
+      // Add CPU metrics to data
+      data.cpuPercent = Math.min(cpuPercent, 100).toFixed(2); // Cap at 100%
+      data.cpuUser = (currentCpuUsage.user / 1000).toFixed(2); // Convert to milliseconds
+      data.cpuSystem = (currentCpuUsage.system / 1000).toFixed(2); // Convert to milliseconds
+      data.cpuTotal = ((currentCpuUsage.user + currentCpuUsage.system) / 1000).toFixed(2);
+      
+      // Update for next measurement
+      this.previousCpuUsage = process.cpuUsage();
+      this.previousTime = process.hrtime.bigint();
+    }
 
     // Add custom metrics if enabled
     if (this.includeCustomMetrics) {
@@ -130,8 +165,12 @@ class MemoryMonitor {
   /**
    * Static method to quickly add monitoring to any app
    */
-  static quickSetup(logFile = 'app-memory.log', interval = 1000) {
-    const monitor = new MemoryMonitor({ logFile, interval });
+  static quickSetup(logFile = 'app-memory.log', interval = 1000, options = {}) {
+    const monitor = new MemoryMonitor({ 
+      logFile, 
+      interval, 
+      ...options 
+    });
     monitor.start();
     return monitor;
   }
@@ -143,12 +182,16 @@ module.exports = MemoryMonitor;
 if (require.main === module || process.env.AUTO_MEMORY_MONITOR) {
   const logFile = process.env.MEMORY_LOG_FILE || 'auto-memory.log';
   const interval = parseInt(process.env.MEMORY_LOG_INTERVAL) || 1000;
+  const includeCpu = process.env.DISABLE_CPU_MONITOR !== 'true'; // Default to enabled
   
-  console.log(`🚀 Auto-starting memory monitoring...`);
+  console.log(`🚀 Auto-starting resource monitoring...`);
   console.log(`   Log file: ${logFile}`);
   console.log(`   Interval: ${interval}ms`);
+  console.log(`   CPU monitoring: ${includeCpu ? 'enabled' : 'disabled'}`);
   console.log('\nTo view graph run:');
-  console.log(`   terminal-graph view --file ${logFile} --accumulate --style lean\n`);
+  console.log(`   terminal-graph view --file ${logFile} --accumulate --style lean`);
+  console.log(`   # Memory mode: --metric heapUsed`);
+  console.log(`   # CPU mode: --metric cpuPercent\n`);
   
-  MemoryMonitor.quickSetup(logFile, interval);
+  MemoryMonitor.quickSetup(logFile, interval, { includeCpu });
 }
