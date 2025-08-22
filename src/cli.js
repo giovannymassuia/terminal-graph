@@ -39,21 +39,32 @@ Monitor Options:
 View Options (Terminal):
   terminal-graph view [options]
     --file, -f <path>      Log file to monitor (default: heap.log)
-    --metric, -m <metric>  Metric: heapUsed, heapTotal, heapPercent, rss, external
+    --metric, -m <metric>  Memory: heapUsed, heapTotal, heapPercent, rss, external
+                          CPU: cpuPercent, cpuUser, cpuSystem, cpuTotal
     --style, -s <style>    Style: blocks, lean, ascii, dots, braille
     --accumulate, -a       Accumulate all data (no rolling window)
     --points, -p <number>  Max data points for rolling window (default: 100)
     --refresh, -r <ms>     Refresh rate in milliseconds (default: 100)
+    
+    Keyboard Controls (in terminal view):
+      M - Toggle between Memory and CPU modes
+      L - Cycle through graph styles
+      R - Reload data
+      C - Clear and reload
 
 Web View Options:
   terminal-graph web [options]
     --file, -f <path>      Log file to monitor (default: heap.log)
-    --metric, -m <metric>  Metric: heapUsed, heapTotal, heapPercent, rss, external
+    --metric, -m <metric>  Memory: heapUsed, heapTotal, heapPercent, rss, external
+                          CPU: cpuPercent, cpuUser, cpuSystem, cpuTotal
     --style, -s <style>    Style: line, area, bars
     --accumulate, -a       Accumulate all data (no rolling window)
     --points, -p <number>  Max data points for rolling window (default: 100)
     --port <number>        Server port (default: 3456)
     --no-open             Don't automatically open browser
+    
+    Web Dashboard Controls:
+      Toggle between Memory/CPU modes or view both simultaneously
 
 Quick Start:
   # Monitor current process

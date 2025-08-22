@@ -8,12 +8,15 @@ const GraphRenderer = require('./graph-renderer');
 class GraphViewer {
   constructor(options = {}) {
     this.logFile = options.logFile || 'heap.log';
-    this.metric = options.metric || 'heapUsed'; // heapUsed, heapTotal, heapPercent, rss, external
+    this.metric = options.metric || 'heapUsed'; // heapUsed, heapTotal, heapPercent, rss, external, cpuPercent, cpuUser, cpuSystem, cpuTotal
     this.maxDataPoints = options.maxDataPoints || 100;
     this.refreshRate = options.refreshRate || 100; // ms
     this.accumulate = options.accumulate || false; // Accumulate data instead of rolling window
     this.style = options.style || 'blocks'; // blocks, ascii, braille
     this.availableStyles = ['blocks', 'lean', 'ascii', 'dots', 'braille'];
+    this.memoryMetrics = ['heapUsed', 'heapTotal', 'heapPercent', 'rss', 'external'];
+    this.cpuMetrics = ['cpuPercent', 'cpuUser', 'cpuSystem', 'cpuTotal'];
+    this.currentMode = this.cpuMetrics.includes(this.metric) ? 'cpu' : 'memory';
     this.dataPoints = [];
     this.renderer = null;
     this.tail = null;
@@ -23,8 +26,8 @@ class GraphViewer {
   async start() {
     console.clear();
     console.log(`Starting graph viewer for ${this.logFile}`);
-    console.log(`Monitoring metric: ${this.metric}`);
-    console.log('Press Ctrl+C to exit, R to reload...\n');
+    console.log(`Monitoring metric: ${this.metric} (${this.currentMode.toUpperCase()} mode)`);
+    console.log('Controls: Ctrl+C=exit | R=reload | C=clear | L=style | M=toggle CPU/Memory\n');
     
     // Initialize renderer
     this.renderer = new GraphRenderer({
@@ -93,6 +96,10 @@ class GraphViewer {
         else if (key === 'l' || key === 'L') {
           this.cycleStyle();
         }
+        // Handle 'm' or 'M' for toggling between CPU/Memory modes
+        else if (key === 'm' || key === 'M') {
+          this.toggleMode();
+        }
         // Handle 'q' for quit
         else if (key === 'q' || key === 'Q') {
           this.stop();
@@ -147,6 +154,37 @@ class GraphViewer {
     } else {
       // If no renderer yet, just log the style change
       console.log(`Style changed from ${oldStyle} to ${this.style}`);
+    }
+  }
+
+  toggleMode() {
+    const oldMetric = this.metric;
+    const oldMode = this.currentMode;
+    
+    // Toggle between memory and CPU modes
+    if (this.currentMode === 'memory') {
+      // Switch to CPU mode - use cpuPercent as default
+      this.currentMode = 'cpu';
+      this.metric = 'cpuPercent';
+    } else {
+      // Switch to memory mode - use heapUsed as default
+      this.currentMode = 'memory';
+      this.metric = 'heapUsed';
+    }
+    
+    // Clear current data points to avoid confusion
+    this.dataPoints = [];
+    
+    // Update renderer title and labels
+    if (this.renderer) {
+      this.renderer.title = `Node.js Resource Monitor - ${this.getMetricLabel()}`;
+      this.renderer.yLabel = this.getMetricUnit();
+      
+      // Reload data for the new metric
+      this.loadExistingData().then(() => {
+        this.render();
+        console.log(`\n🔄 Switched from ${oldMode.toUpperCase()} (${oldMetric}) to ${this.currentMode.toUpperCase()} (${this.metric}) mode`);
+      });
     }
   }
 
@@ -239,6 +277,7 @@ class GraphViewer {
 
   extractMetricValue(data) {
     switch (this.metric) {
+      // Memory metrics
       case 'heapUsed':
         return parseFloat(data.heapUsed);
       case 'heapTotal':
@@ -249,25 +288,43 @@ class GraphViewer {
         return parseFloat(data.rss);
       case 'external':
         return parseFloat(data.external);
+      // CPU metrics
+      case 'cpuPercent':
+        return parseFloat(data.cpuPercent || 0);
+      case 'cpuUser':
+        return parseFloat(data.cpuUser || 0);
+      case 'cpuSystem':
+        return parseFloat(data.cpuSystem || 0);
+      case 'cpuTotal':
+        return parseFloat(data.cpuTotal || 0);
       default:
-        return parseFloat(data.heapUsed);
+        return parseFloat(data.heapUsed || 0);
     }
   }
 
   getMetricLabel() {
     const labels = {
+      // Memory metrics
       heapUsed: 'Heap Used',
       heapTotal: 'Heap Total',
       heapPercent: 'Heap Usage %',
       rss: 'RSS Memory',
-      external: 'External Memory'
+      external: 'External Memory',
+      // CPU metrics
+      cpuPercent: 'CPU Usage %',
+      cpuUser: 'CPU User Time',
+      cpuSystem: 'CPU System Time',
+      cpuTotal: 'CPU Total Time'
     };
-    return labels[this.metric] || 'Memory';
+    return labels[this.metric] || 'Resource';
   }
 
   getMetricUnit() {
-    if (this.metric === 'heapPercent') {
+    if (this.metric === 'heapPercent' || this.metric === 'cpuPercent') {
       return 'Percent (%)';
+    }
+    if (this.cpuMetrics.includes(this.metric) && this.metric !== 'cpuPercent') {
+      return 'Time (ms)';
     }
     return 'Memory (MB)';
   }
