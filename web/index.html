@@ -59,6 +59,45 @@
             font-size: 0.9em;
         }
 
+        .resolution-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .resolution-control input[type="range"] {
+            width: 120px;
+            height: 6px;
+            background: #555;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .resolution-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #4ec9b0;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .resolution-control input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #4ec9b0;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+
+        .resolution-control span {
+            color: #cccccc;
+            font-size: 0.85em;
+            min-width: 30px;
+        }
+
         select, button {
             background: #3c3c3c;
             color: #cccccc;
@@ -430,6 +469,13 @@
                         <option value="area">Area</option>
                         <option value="bars">Bars</option>
                     </select>
+                </div>
+                <div class="control-group">
+                    <label>Resolution:</label>
+                    <div class="resolution-control">
+                        <input type="range" id="resolutionSlider" min="50" max="1000" value="100" step="50">
+                        <span id="resolutionValue">100</span>
+                    </div>
                 </div>
                 <div class="control-group">
                     <button id="pauseBtn">Pause</button>
@@ -1192,6 +1238,12 @@
                 document.getElementById('logFile').textContent = config.logFile;
                 document.getElementById('styleSelect').value = config.style;
                 
+                // Initialize resolution slider
+                const resolution = config.resolution || 100;
+                document.getElementById('resolutionSlider').value = resolution;
+                document.getElementById('resolutionValue').textContent = resolution;
+                document.getElementById('resolutionSlider').dataset.lastValidValue = resolution;
+                
                 // Set initial single metric from config
                 setSingleViewMetric(config.metric || 'heapUsed');
             } catch (error) {
@@ -1269,6 +1321,8 @@
             const singleViewBtn = document.getElementById('singleViewBtn');
             const multiViewBtn = document.getElementById('multiViewBtn');
             const compareViewBtn = document.getElementById('compareViewBtn');
+            const resolutionSlider = document.getElementById('resolutionSlider');
+            const resolutionValue = document.getElementById('resolutionValue');
 
             styleSelect.addEventListener('change', (e) => {
                 Object.values(renderers).forEach(renderer => {
@@ -1303,6 +1357,42 @@
             multiViewBtn.addEventListener('click', () => switchViewMode('multi'));
             compareViewBtn.addEventListener('click', () => switchViewMode('compare'));
 
+            // Resolution slider
+            resolutionSlider.addEventListener('input', (e) => {
+                const newResolution = parseInt(e.target.value);
+                resolutionValue.textContent = newResolution;
+            });
+
+            resolutionSlider.addEventListener('change', (e) => {
+                const newResolution = parseInt(e.target.value);
+                fetch('/resolution', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ resolution: newResolution })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log(`Resolution updated to ${data.resolution} data points`);
+                    } else {
+                        console.error('Failed to update resolution:', data.error);
+                        // Reset slider to previous value
+                        resolutionSlider.value = resolutionSlider.dataset.lastValidValue || 100;
+                        resolutionValue.textContent = resolutionSlider.value;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating resolution:', error);
+                    // Reset slider to previous value
+                    resolutionSlider.value = resolutionSlider.dataset.lastValidValue || 100;
+                    resolutionValue.textContent = resolutionSlider.value;
+                });
+                
+                // Store the valid value
+                resolutionSlider.dataset.lastValidValue = newResolution;
+            });
 
             // Metric checkboxes for compare view
             document.querySelectorAll('#metricSelector input[type="checkbox"]').forEach(checkbox => {
